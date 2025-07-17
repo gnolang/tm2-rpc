@@ -1,7 +1,13 @@
-import { toUtf8 } from "@cosmjs/encoding";
+import {
+  toUtf8,
+} from "@cosmjs/encoding";
 
-import { ReadonlyDateWithNanoseconds } from "../dates";
-import { BlockId } from "./responses";
+import {
+  ReadonlyDateWithNanoseconds,
+} from "../dates";
+import {
+  BlockId,
+} from "./responses";
 
 /**
  * A runtime checker that ensures a given value is set (i.e. not undefined or null)
@@ -100,7 +106,7 @@ export function assertObject<T>(value: T): T {
 }
 
 interface Lengther {
-  readonly length: number;
+  readonly length: number
 }
 
 /**
@@ -116,7 +122,8 @@ export function assertNotEmpty<T>(value: T): T {
 
   if (typeof value === "number" && value === 0) {
     throw new Error("must provide a non-zero value");
-  } else if ((value as any as Lengther).length === 0) {
+  }
+  else if ((value as any as Lengther).length === 0) {
     throw new Error("must provide a non-empty value");
   }
   return value;
@@ -151,10 +158,8 @@ export function encodeString(s: string): Uint8Array {
 // See https://github.com/tendermint/go-amino/blob/v0.15.0/encoder.go#L79-L87
 export function encodeUvarint(n: number): Uint8Array {
   return n >= 0x80
-    ? // eslint-disable-next-line no-bitwise
-      Uint8Array.from([(n & 0xff) | 0x80, ...encodeUvarint(n >> 7)])
-    : // eslint-disable-next-line no-bitwise
-      Uint8Array.from([n & 0xff]);
+    ? Uint8Array.from([(n & 0xff) | 0x80, ...encodeUvarint(n >> 7)])
+    : Uint8Array.from([n & 0xff]);
 }
 
 // See https://github.com/tendermint/go-amino/blob/v0.15.0/encoder.go#L134-L178
@@ -183,16 +188,5 @@ export function encodeVersion(version: number): Uint8Array {
 }
 */
 export function encodeBlockId(blockId: BlockId): Uint8Array {
-  return Uint8Array.from([
-    0x0a,
-    blockId.hash.length,
-    ...blockId.hash,
-    0x12,
-    blockId.parts.hash.length + 4,
-    0x08,
-    blockId.parts.total,
-    0x12,
-    blockId.parts.hash.length,
-    ...blockId.parts.hash,
-  ]);
+  return Uint8Array.from([0x0a, blockId.hash.length, ...blockId.hash, 0x12, blockId.parts.hash.length + 4, 0x08, blockId.parts.total, 0x12, blockId.parts.hash.length, ...blockId.parts.hash]);
 }

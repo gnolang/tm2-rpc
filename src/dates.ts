@@ -1,15 +1,21 @@
-import { fromRfc3339 } from "@cosmjs/encoding";
-import { Uint32 } from "@cosmjs/math";
-import { ReadonlyDate } from "readonly-date";
+import {
+  fromRfc3339,
+} from "@cosmjs/encoding";
+import {
+  Uint32,
+} from "@cosmjs/math";
+import {
+  ReadonlyDate,
+} from "readonly-date";
 
 export interface ReadonlyDateWithNanoseconds extends ReadonlyDate {
   /* Nanoseconds after the time stored in a vanilla ReadonlyDate (millisecond granularity) */
-  readonly nanoseconds?: number;
+  readonly nanoseconds?: number
 }
 
 export interface DateWithNanoseconds extends Date {
   /** Nanoseconds after the time stored in a vanilla Date (millisecond granularity) */
-  nanoseconds?: number;
+  nanoseconds?: number
 }
 
 export function fromRfc3339WithNanoseconds(dateTimeString: string): DateWithNanoseconds {
@@ -43,7 +49,10 @@ export function fromSeconds(seconds: number, nanos = 0): DateWithNanoseconds {
  * [.google.protobuf.Timestamp](https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#google.protobuf.Timestamp)
  * or any other system that does not use millisecond precision.
  */
-export function toSeconds(date: ReadonlyDateWithNanoseconds): { seconds: number; nanos: number } {
+export function toSeconds(date: ReadonlyDateWithNanoseconds): {
+  seconds: number
+  nanos: number
+} {
   return {
     seconds: Math.floor(date.getTime() / 1000),
     nanos: (date.getTime() % 1000) * 1000000 + (date.nanoseconds ?? 0),

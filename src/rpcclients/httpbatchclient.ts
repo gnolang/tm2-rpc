@@ -5,15 +5,21 @@ import {
   parseJsonRpcResponse,
 } from "@cosmjs/json-rpc";
 
-import { http } from "./http";
-import { HttpEndpoint } from "./httpclient";
-import { hasProtocol, RpcClient } from "./rpcclient";
+import {
+  http,
+} from "./http";
+import {
+  HttpEndpoint,
+} from "./httpclient";
+import {
+  hasProtocol, RpcClient,
+} from "./rpcclient";
 
 export interface HttpBatchClientOptions {
   /** Interval for dispatching batches (in milliseconds) */
-  dispatchInterval: number;
+  dispatchInterval: number
   /** Max number of items sent in one request */
-  batchSizeLimit: number;
+  batchSizeLimit: number
 }
 
 // Those values are private and can change any time.
@@ -31,12 +37,13 @@ export class HttpBatchClient implements RpcClient {
   private timer?: NodeJS.Timeout;
 
   private readonly queue: Array<{
-    request: JsonRpcRequest;
-    resolve: (a: JsonRpcSuccessResponse) => void;
-    reject: (a: Error) => void;
+    request: JsonRpcRequest
+    resolve: (a: JsonRpcSuccessResponse) => void
+    reject: (a: Error) => void
   }> = [];
 
-  public constructor(endpoint: string | HttpEndpoint, options: Partial<HttpBatchClientOptions> = {}) {
+  public constructor(endpoint: string | HttpEndpoint, options: Partial<HttpBatchClientOptions> = {
+  }) {
     this.options = {
       batchSizeLimit: options.batchSizeLimit ?? defaultHttpBatchClientOptions.batchSizeLimit,
       dispatchInterval: options.dispatchInterval ?? defaultHttpBatchClientOptions.dispatchInterval,
@@ -46,7 +53,8 @@ export class HttpBatchClient implements RpcClient {
         throw new Error("Endpoint URL is missing a protocol. Expected 'https://' or 'http://'.");
       }
       this.url = endpoint;
-    } else {
+    }
+    else {
       this.url = endpoint.url;
       this.headers = endpoint.headers;
     }
@@ -55,13 +63,19 @@ export class HttpBatchClient implements RpcClient {
   }
 
   public disconnect(): void {
-    this.timer && clearInterval(this.timer);
+    if (this.timer) {
+      clearInterval(this.timer);
+    }
     this.timer = undefined;
   }
 
   public async execute(request: JsonRpcRequest): Promise<JsonRpcSuccessResponse> {
     return new Promise((resolve, reject) => {
-      this.queue.push({ request, resolve, reject });
+      this.queue.push({
+        request,
+        resolve,
+        reject,
+      });
 
       if (this.queue.length >= this.options.batchSizeLimit) {
         // this train is full, let's go
@@ -72,9 +86,9 @@ export class HttpBatchClient implements RpcClient {
 
   private validate(): void {
     if (
-      !this.options.batchSizeLimit ||
-      !Number.isSafeInteger(this.options.batchSizeLimit) ||
-      this.options.batchSizeLimit < 1
+      !this.options.batchSizeLimit
+      || !Number.isSafeInteger(this.options.batchSizeLimit)
+      || this.options.batchSizeLimit < 1
     ) {
       throw new Error("batchSizeLimit must be a safe integer >= 1");
     }
@@ -90,8 +104,8 @@ export class HttpBatchClient implements RpcClient {
 
     if (!batch.length) return;
 
-    const requests = batch.map((s) => s.request);
-    const requestIds = requests.map((request) => request.id);
+    const requests = batch.map(s => s.request);
+    const requestIds = requests.map(request => request.id);
 
     http("POST", this.url, this.headers, requests).then(
       (raw) => {
@@ -99,20 +113,23 @@ export class HttpBatchClient implements RpcClient {
         const arr = Array.isArray(raw) ? raw : [raw];
 
         arr.forEach((el) => {
-          const req = batch.find((s) => s.request.id === el.id);
+          const req = batch.find(s => s.request.id === el.id);
           if (!req) return;
-          const { reject, resolve } = req;
+          const {
+            reject, resolve,
+          } = req;
           const response = parseJsonRpcResponse(el);
           if (isJsonRpcErrorResponse(response)) {
             reject(new Error(JSON.stringify(response.error)));
-          } else {
+          }
+          else {
             resolve(response);
           }
         });
       },
       (error) => {
         for (const requestId of requestIds) {
-          const req = batch.find((s) => s.request.id === requestId);
+          const req = batch.find(s => s.request.id === requestId);
           if (!req) return;
           req.reject(error);
         }

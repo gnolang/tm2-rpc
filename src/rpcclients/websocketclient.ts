@@ -6,11 +6,19 @@ import {
   JsonRpcSuccessResponse,
   parseJsonRpcResponse,
 } from "@cosmjs/json-rpc";
-import { ConnectionStatus, ReconnectingSocket, SocketWrapperMessageEvent } from "@cosmjs/socket";
-import { firstEvent } from "@cosmjs/stream";
-import { Listener, Producer, Stream, Subscription } from "xstream";
+import {
+  ConnectionStatus, ReconnectingSocket, SocketWrapperMessageEvent,
+} from "@cosmjs/socket";
+import {
+  firstEvent,
+} from "@cosmjs/stream";
+import {
+  Listener, Producer, Stream, Subscription,
+} from "xstream";
 
-import { hasProtocol, RpcStreamingClient, SubscriptionEvent } from "./rpcclient";
+import {
+  hasProtocol, RpcStreamingClient, SubscriptionEvent,
+} from "./rpcclient";
 
 function defaultErrorHandler(error: any): never {
   throw error;
@@ -62,13 +70,18 @@ class RpcEventProducer implements Producer<SubscriptionEvent> {
     this.running = false;
     // Tell the server we are done in order to save resources. We cannot wait for the result.
     // This may fail when socket connection is not open, thus ignore errors in queueRequest
-    const endRequest: JsonRpcRequest = { ...this.request, method: "unsubscribe" };
+    const endRequest: JsonRpcRequest = {
+      ...this.request,
+      method: "unsubscribe",
+    };
     try {
       this.socket.queueRequest(JSON.stringify(endRequest));
-    } catch (error) {
+    }
+    catch (error) {
       if (error instanceof Error && error.message.match(/socket has disconnected/i)) {
         // ignore
-      } else {
+      }
+      else {
         throw error;
       }
     }
@@ -79,7 +92,7 @@ class RpcEventProducer implements Producer<SubscriptionEvent> {
 
     // this should unsubscribe itself, so doesn't need to be removed explicitly
     const idSubscription = responseStream
-      .filter((response) => response.id === this.request.id)
+      .filter(response => response.id === this.request.id)
       .subscribe({
         next: (response) => {
           if (isJsonRpcErrorResponse(response)) {
@@ -94,13 +107,14 @@ class RpcEventProducer implements Producer<SubscriptionEvent> {
     // Tendermint adds an "#event" suffix for events that follow a previous subscription
     // https://github.com/tendermint/tendermint/blob/v0.23.0/rpc/core/events.go#L107
     const idEventSubscription = responseStream
-      .filter((response) => response.id === this.request.id)
+      .filter(response => response.id === this.request.id)
       .subscribe({
         next: (response) => {
           if (isJsonRpcErrorResponse(response)) {
             this.closeSubscriptions();
             listener.error(JSON.stringify(response.error));
-          } else {
+          }
+          else {
             listener.next(response.result as SubscriptionEvent);
           }
         },
@@ -178,7 +192,7 @@ export class WebsocketClient implements RpcStreamingClient {
 
   public listen(request: JsonRpcRequest): Stream<SubscriptionEvent> {
     if (request.method !== "subscribe") {
-      throw new Error(`Request method must be "subscribe" to start event listening`);
+      throw new Error("Request method must be \"subscribe\" to start event listening");
     }
 
     const query = (request.params as any).query;
@@ -191,8 +205,8 @@ export class WebsocketClient implements RpcStreamingClient {
       const stream = Stream.create(producer);
       this.subscriptionStreams.set(query, stream);
     }
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return this.subscriptionStreams.get(query)!.filter((response) => response.query !== undefined);
+
+    return this.subscriptionStreams.get(query)!.filter(response => response.query !== undefined);
   }
 
   /**
@@ -208,6 +222,6 @@ export class WebsocketClient implements RpcStreamingClient {
   }
 
   protected async responseForRequestId(id: JsonRpcId): Promise<JsonRpcResponse> {
-    return firstEvent(this.jsonRpcResponseStream.filter((r) => r.id === id));
+    return firstEvent(this.jsonRpcResponseStream.filter(r => r.id === id));
   }
 }

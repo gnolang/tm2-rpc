@@ -1,4 +1,6 @@
-import { Sha256, sha256 } from "@cosmjs/crypto";
+import {
+  Sha256, sha256,
+} from "@cosmjs/crypto";
 
 import {
   encodeBlockId,
@@ -7,7 +9,9 @@ import {
   encodeTime,
   encodeUvarint,
 } from "./encodings";
-import { Header } from "./responses";
+import {
+  Header,
+} from "./responses";
 
 // hash is sha256
 // https://github.com/tendermint/tendermint/blob/master/UPGRADING.md#v0260
@@ -60,19 +64,7 @@ export function hashBlock(header: Header): Uint8Array {
 
   const encodedFields: readonly Uint8Array[] = [
   // encodeVersion(header.version),
-    encodeString(header.chainId),
-    encodeUvarint(header.height),
-    encodeTime(header.time),
-    encodeBlockId(header.lastBlockId),
-
-    encodeBytes(header.lastCommitHash),
-    encodeBytes(header.dataHash),
-    encodeBytes(header.validatorsHash),
-    encodeBytes(header.nextValidatorsHash),
-    encodeBytes(header.consensusHash),
-    encodeBytes(header.appHash),
-    encodeBytes(header.lastResultsHash),
-    encodeBytes(header.proposerAddress),
+    encodeString(header.chainId), encodeUvarint(header.height), encodeTime(header.time), encodeBlockId(header.lastBlockId), encodeBytes(header.lastCommitHash), encodeBytes(header.dataHash), encodeBytes(header.validatorsHash), encodeBytes(header.nextValidatorsHash), encodeBytes(header.consensusHash), encodeBytes(header.appHash), encodeBytes(header.lastResultsHash), encodeBytes(header.proposerAddress),
   ];
   return hashTree(encodedFields);
 }

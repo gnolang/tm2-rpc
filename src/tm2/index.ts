@@ -23,7 +23,9 @@ export type {
   ValidatorsParams,
   ValidatorsRequest,
 } from "./requests";
-export { Method, SubscriptionEventType } from "./requests";
+export {
+  Method, SubscriptionEventType,
+} from "./requests";
 export type {
   AbciInfoResponse,
   AbciQueryResponse,
@@ -49,8 +51,6 @@ export type {
   GenesisResponse,
   Header,
   HealthResponse,
-  NewBlockEvent,
-  NewBlockHeaderEvent,
   NodeInfo,
   NumUnconfirmedTxsResponse,
   ProofOp,
@@ -68,5 +68,9 @@ export type {
   ValidatorsResponse,
   Vote,
 } from "./responses";
-export { broadcastTxCommitSuccess, broadcastTxSyncSuccess, VoteType } from "./responses";
-export { Tm2Client } from "./tm2client";
+export {
+  broadcastTxCommitSuccess, broadcastTxSyncSuccess, VoteType,
+} from "./responses";
+export {
+  Tm2Client,
+} from "./tm2client";

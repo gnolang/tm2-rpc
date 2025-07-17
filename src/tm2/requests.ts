@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
-
 /**
  * RPC methods as documented in https://docs.tendermint.com/master/rpc/
  *
@@ -28,22 +26,22 @@ export enum Method {
   Unsubscribe = "unsubscribe",
 }
 
-export type Request =
-  | AbciInfoRequest
-  | AbciQueryRequest
-  | BlockRequest
-  | BlockSearchRequest
-  | BlockchainRequest
-  | BlockResultsRequest
-  | BroadcastTxRequest
-  | CommitRequest
-  | GenesisRequest
-  | HealthRequest
-  | NumUnconfirmedTxsRequest
-  | StatusRequest
-  | TxRequest
-  | TxSearchRequest
-  | ValidatorsRequest;
+export type Request
+  = | AbciInfoRequest
+    | AbciQueryRequest
+    | BlockRequest
+    | BlockSearchRequest
+    | BlockchainRequest
+    | BlockResultsRequest
+    | BroadcastTxRequest
+    | CommitRequest
+    | GenesisRequest
+    | HealthRequest
+    | NumUnconfirmedTxsRequest
+    | StatusRequest
+    | TxRequest
+    | TxSearchRequest
+    | ValidatorsRequest;
 
 /**
  * Raw values must match the tendermint event name
@@ -57,151 +55,151 @@ export enum SubscriptionEventType {
 }
 
 export interface AbciInfoRequest {
-  readonly method: Method.AbciInfo;
+  readonly method: Method.AbciInfo
 }
 
 export interface AbciQueryRequest {
-  readonly method: Method.AbciQuery;
-  readonly params: AbciQueryParams;
+  readonly method: Method.AbciQuery
+  readonly params: AbciQueryParams
 }
 
 export interface AbciQueryParams {
-  readonly path: string;
-  readonly data: Uint8Array;
-  readonly height?: number;
+  readonly path: string
+  readonly data: Uint8Array
+  readonly height?: number
   /**
    * A flag that defines if proofs are included in the response or not.
    *
    * Internally this is mapped to the old inverse name `trusted` for Tendermint < 0.26.
    * Starting with Tendermint 0.26, the default value changed from true to false.
    */
-  readonly prove?: boolean;
+  readonly prove?: boolean
 }
 
 export interface BlockRequest {
-  readonly method: Method.Block;
+  readonly method: Method.Block
   readonly params: {
-    readonly height?: number;
-  };
+    readonly height?: number
+  }
 }
 
 export interface BlockchainRequest {
-  readonly method: Method.Blockchain;
-  readonly params: BlockchainRequestParams;
+  readonly method: Method.Blockchain
+  readonly params: BlockchainRequestParams
 }
 
 export interface BlockchainRequestParams {
-  readonly minHeight?: number;
-  readonly maxHeight?: number;
+  readonly minHeight?: number
+  readonly maxHeight?: number
 }
 
 export interface BlockResultsRequest {
-  readonly method: Method.BlockResults;
+  readonly method: Method.BlockResults
   readonly params: {
-    readonly height?: number;
-  };
+    readonly height?: number
+  }
 }
 
 export interface BlockSearchRequest {
-  readonly method: Method.BlockSearch;
-  readonly params: BlockSearchParams;
+  readonly method: Method.BlockSearch
+  readonly params: BlockSearchParams
 }
 
 export interface BlockSearchParams {
-  readonly query: string;
-  readonly page?: number;
-  readonly per_page?: number;
-  readonly order_by?: string;
+  readonly query: string
+  readonly page?: number
+  readonly per_page?: number
+  readonly order_by?: string
 }
 
 export interface BroadcastTxRequest {
-  readonly method: Method.BroadcastTxAsync | Method.BroadcastTxSync | Method.BroadcastTxCommit;
-  readonly params: BroadcastTxParams;
+  readonly method: Method.BroadcastTxAsync | Method.BroadcastTxSync | Method.BroadcastTxCommit
+  readonly params: BroadcastTxParams
 }
 
 export interface BroadcastTxParams {
-  readonly tx: Uint8Array;
+  readonly tx: Uint8Array
 }
 
 export interface CommitRequest {
-  readonly method: Method.Commit;
+  readonly method: Method.Commit
   readonly params: {
-    readonly height?: number;
-  };
+    readonly height?: number
+  }
 }
 
 export interface GenesisRequest {
-  readonly method: Method.Genesis;
+  readonly method: Method.Genesis
 }
 
 export interface HealthRequest {
-  readonly method: Method.Health;
+  readonly method: Method.Health
 }
 
 export interface NumUnconfirmedTxsRequest {
-  readonly method: Method.NumUnconfirmedTxs;
+  readonly method: Method.NumUnconfirmedTxs
 }
 
 export interface StatusRequest {
-  readonly method: Method.Status;
+  readonly method: Method.Status
 }
 
 export interface SubscribeRequest {
-  readonly method: Method.Subscribe;
+  readonly method: Method.Subscribe
   readonly query: {
-    readonly type: SubscriptionEventType;
-    readonly raw?: string;
-  };
+    readonly type: SubscriptionEventType
+    readonly raw?: string
+  }
 }
 
 export interface QueryTag {
-  readonly key: string;
-  readonly value: string;
+  readonly key: string
+  readonly value: string
 }
 
 export interface TxRequest {
-  readonly method: Method.Tx;
-  readonly params: TxParams;
+  readonly method: Method.Tx
+  readonly params: TxParams
 }
 
 export interface TxParams {
-  readonly hash: Uint8Array;
-  readonly prove?: boolean;
+  readonly hash: Uint8Array
+  readonly prove?: boolean
 }
 
 // TODO: clarify this type
 export interface TxSearchRequest {
-  readonly method: Method.TxSearch;
-  readonly params: TxSearchParams;
+  readonly method: Method.TxSearch
+  readonly params: TxSearchParams
 }
 
 export interface TxSearchParams {
-  readonly query: string;
-  readonly prove?: boolean;
-  readonly page?: number;
-  readonly per_page?: number;
-  readonly order_by?: string;
+  readonly query: string
+  readonly prove?: boolean
+  readonly page?: number
+  readonly per_page?: number
+  readonly order_by?: string
 }
 
 export interface ValidatorsRequest {
-  readonly method: Method.Validators;
-  readonly params: ValidatorsParams;
+  readonly method: Method.Validators
+  readonly params: ValidatorsParams
 }
 
 export interface ValidatorsParams {
-  readonly height?: number;
-  readonly page?: number;
-  readonly per_page?: number;
+  readonly height?: number
+  readonly page?: number
+  readonly per_page?: number
 }
 
 export interface BuildQueryComponents {
-  readonly tags?: readonly QueryTag[];
-  readonly raw?: string;
+  readonly tags?: readonly QueryTag[]
+  readonly raw?: string
 }
 
 export function buildQuery(components: BuildQueryComponents): string {
   const tags = components.tags ? components.tags : [];
-  const tagComponents = tags.map((tag) => `${tag.key}='${tag.value}'`);
+  const tagComponents = tags.map(tag => `${tag.key}='${tag.value}'`);
   const rawComponents = components.raw ? [components.raw] : [];
 
   return [...tagComponents, ...rawComponents].join(" AND ");

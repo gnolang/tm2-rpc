@@ -5,8 +5,12 @@ import {
   parseJsonRpcResponse,
 } from "@cosmjs/json-rpc";
 
-import { http } from "./http";
-import { hasProtocol, RpcClient } from "./rpcclient";
+import {
+  http,
+} from "./http";
+import {
+  hasProtocol, RpcClient,
+} from "./rpcclient";
 
 export interface HttpEndpoint {
   /**
@@ -15,11 +19,11 @@ export interface HttpEndpoint {
    * For POST APIs like Tendermint RPC in CosmJS,
    * this is without the method specific paths (e.g. https://cosmoshub-4--rpc--full.datahub.figment.io/)
    */
-  readonly url: string;
+  readonly url: string
   /**
    * HTTP headers that are sent with every request, such as authorization information.
    */
-  readonly headers: Record<string, string>;
+  readonly headers: Record<string, string>
 }
 
 export class HttpClient implements RpcClient {
@@ -32,7 +36,8 @@ export class HttpClient implements RpcClient {
         throw new Error("Endpoint URL is missing a protocol. Expected 'https://' or 'http://'.");
       }
       this.url = endpoint;
-    } else {
+    }
+    else {
       this.url = endpoint.url;
       this.headers = endpoint.headers;
     }

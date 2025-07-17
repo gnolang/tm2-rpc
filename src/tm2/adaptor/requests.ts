@@ -1,17 +1,26 @@
-/* eslint-disable @typescript-eslint/naming-convention */
-import { toBase64, toHex } from "@cosmjs/encoding";
-import { JsonRpcRequest } from "@cosmjs/json-rpc";
+import {
+  toBase64, toHex,
+} from "@cosmjs/encoding";
+import {
+  JsonRpcRequest,
+} from "@cosmjs/json-rpc";
 
-import { smallIntToApi } from "../../inthelpers";
-import { createJsonRpcRequest } from "../../jsonrpc";
-import { assertNotEmpty, may } from "../encodings";
+import {
+  smallIntToApi,
+} from "../../inthelpers";
+import {
+  createJsonRpcRequest,
+} from "../../jsonrpc";
+import {
+  assertNotEmpty, may,
+} from "../encodings";
 import * as requests from "../requests";
 
 interface HeightParam {
-  readonly height?: number;
+  readonly height?: number
 }
 interface RpcHeightParam {
-  readonly height?: string;
+  readonly height?: string
 }
 function encodeHeightParam(param: HeightParam): RpcHeightParam {
   return {
@@ -20,8 +29,8 @@ function encodeHeightParam(param: HeightParam): RpcHeightParam {
 }
 
 interface RpcBlockchainRequestParams {
-  readonly minHeight?: string;
-  readonly maxHeight?: string;
+  readonly minHeight?: string
+  readonly maxHeight?: string
 }
 
 function encodeBlockchainRequestParams(param: requests.BlockchainRequestParams): RpcBlockchainRequestParams {
@@ -32,10 +41,10 @@ function encodeBlockchainRequestParams(param: requests.BlockchainRequestParams):
 }
 
 interface RpcBlockSearchParams {
-  readonly query: string;
-  readonly page?: string;
-  readonly per_page?: string;
-  readonly order_by?: string;
+  readonly query: string
+  readonly page?: string
+  readonly per_page?: string
+  readonly order_by?: string
 }
 function encodeBlockSearchParams(params: requests.BlockSearchParams): RpcBlockSearchParams {
   return {
@@ -47,11 +56,11 @@ function encodeBlockSearchParams(params: requests.BlockSearchParams): RpcBlockSe
 }
 
 interface RpcAbciQueryParams {
-  readonly path: string;
+  readonly path: string
   /** hex encoded */
-  readonly data: string;
-  readonly height?: string;
-  readonly prove?: boolean;
+  readonly data: string
+  readonly height?: string
+  readonly prove?: boolean
 }
 
 function encodeAbciQueryParams(params: requests.AbciQueryParams): RpcAbciQueryParams {
@@ -65,7 +74,7 @@ function encodeAbciQueryParams(params: requests.AbciQueryParams): RpcAbciQueryPa
 
 interface RpcBroadcastTxParams {
   /** base64 encoded */
-  readonly tx: string;
+  readonly tx: string
 }
 function encodeBroadcastTxParams(params: requests.BroadcastTxParams): RpcBroadcastTxParams {
   return {
@@ -75,8 +84,8 @@ function encodeBroadcastTxParams(params: requests.BroadcastTxParams): RpcBroadca
 
 interface RpcTxParams {
   /** base64 encoded */
-  readonly hash: string;
-  readonly prove?: boolean;
+  readonly hash: string
+  readonly prove?: boolean
 }
 function encodeTxParams(params: requests.TxParams): RpcTxParams {
   return {
@@ -86,11 +95,11 @@ function encodeTxParams(params: requests.TxParams): RpcTxParams {
 }
 
 interface RpcTxSearchParams {
-  readonly query: string;
-  readonly prove?: boolean;
-  readonly page?: string;
-  readonly per_page?: string;
-  readonly order_by?: string;
+  readonly query: string
+  readonly prove?: boolean
+  readonly page?: string
+  readonly per_page?: string
+  readonly order_by?: string
 }
 function encodeTxSearchParams(params: requests.TxSearchParams): RpcTxSearchParams {
   return {
@@ -103,9 +112,9 @@ function encodeTxSearchParams(params: requests.TxSearchParams): RpcTxSearchParam
 }
 
 interface RpcValidatorsParams {
-  readonly height?: string;
-  readonly page?: string;
-  readonly per_page?: string;
+  readonly height?: string
+  readonly page?: string
+  readonly per_page?: string
 }
 function encodeValidatorsParams(params: requests.ValidatorsParams): RpcValidatorsParams {
   return {
@@ -165,9 +174,17 @@ export class Params {
   }
 
   public static encodeSubscribe(req: requests.SubscribeRequest): JsonRpcRequest {
-    const eventTag = { key: "tm.event", value: req.query.type };
-    const query = requests.buildQuery({ tags: [eventTag], raw: req.query.raw });
-    return createJsonRpcRequest("subscribe", { query: query });
+    const eventTag = {
+      key: "tm.event",
+      value: req.query.type,
+    };
+    const query = requests.buildQuery({
+      tags: [eventTag],
+      raw: req.query.raw,
+    });
+    return createJsonRpcRequest("subscribe", {
+      query: query,
+    });
   }
 
   public static encodeTx(req: requests.TxRequest): JsonRpcRequest {

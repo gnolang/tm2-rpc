@@ -1,6 +1,10 @@
-import { Int53 } from "@cosmjs/math";
+import {
+  Int53,
+} from "@cosmjs/math";
 
-import { assertString } from "./tm2/encodings";
+import {
+  assertString,
+} from "./tm2/encodings";
 
 /**
  * Takes an integer value from the Tendermint RPC API and

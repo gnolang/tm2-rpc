@@ -1,5 +1,9 @@
-import { JsonRpcRequest, JsonRpcSuccessResponse } from "@cosmjs/json-rpc";
-import { Stream } from "xstream";
+import {
+  JsonRpcRequest, JsonRpcSuccessResponse,
+} from "@cosmjs/json-rpc";
+import {
+  Stream,
+} from "xstream";
 
 /**
  * An event emitted from Tendermint after subscribing via RPC.
@@ -9,20 +13,20 @@ import { Stream } from "xstream";
  * to each JSON-RPC request. But this is how subscriptions work in Tendermint.
  */
 export interface SubscriptionEvent {
-  readonly query: string;
+  readonly query: string
   readonly data: {
-    readonly type: string;
-    readonly value: any;
-  };
+    readonly type: string
+    readonly value: any
+  }
 }
 
 export interface RpcClient {
-  readonly execute: (request: JsonRpcRequest) => Promise<JsonRpcSuccessResponse>;
-  readonly disconnect: () => void;
+  readonly execute: (request: JsonRpcRequest) => Promise<JsonRpcSuccessResponse>
+  readonly disconnect: () => void
 }
 
 export interface RpcStreamingClient extends RpcClient {
-  readonly listen: (request: JsonRpcRequest) => Stream<SubscriptionEvent>;
+  readonly listen: (request: JsonRpcRequest) => Stream<SubscriptionEvent>
 }
 
 export function instanceOfRpcStreamingClient(client: RpcClient): client is RpcStreamingClient {

@@ -1,7 +1,13 @@
-import { JsonRpcRequest, JsonRpcSuccessResponse } from "@cosmjs/json-rpc";
-import { Stream } from "xstream";
+import {
+  JsonRpcRequest, JsonRpcSuccessResponse,
+} from "@cosmjs/json-rpc";
+import {
+  Stream,
+} from "xstream";
 
-import { createJsonRpcRequest } from "../jsonrpc";
+import {
+  createJsonRpcRequest,
+} from "../jsonrpc";
 import {
   HttpClient,
   HttpEndpoint,
@@ -10,7 +16,9 @@ import {
   SubscriptionEvent,
   WebsocketClient,
 } from "../rpcclients";
-import { Params, Responses } from "./adaptor";
+import {
+  Params, Responses,
+} from "./adaptor";
 import * as requests from "./requests";
 import * as responses from "./responses";
 
@@ -30,7 +38,8 @@ export class Tm2Client {
     let rpcClient: RpcClient;
     if (typeof endpoint === "object") {
       rpcClient = new HttpClient(endpoint);
-    } else {
+    }
+    else {
       const useHttp = endpoint.startsWith("http://") || endpoint.startsWith("https://");
       rpcClient = useHttp ? new HttpClient(endpoint) : new WebsocketClient(endpoint);
     }
@@ -81,24 +90,36 @@ export class Tm2Client {
   }
 
   public async abciInfo(): Promise<responses.AbciInfoResponse> {
-    const query: requests.AbciInfoRequest = { method: requests.Method.AbciInfo };
+    const query: requests.AbciInfoRequest = {
+      method: requests.Method.AbciInfo,
+    };
     return this.doCall(query, Params.encodeAbciInfo, Responses.decodeAbciInfo);
   }
 
   public async abciQuery(params: requests.AbciQueryParams): Promise<responses.AbciQueryResponse> {
-    const query: requests.AbciQueryRequest = { params: params, method: requests.Method.AbciQuery };
+    const query: requests.AbciQueryRequest = {
+      params: params,
+      method: requests.Method.AbciQuery,
+    };
     return this.doCall(query, Params.encodeAbciQuery, Responses.decodeAbciQuery);
   }
 
   public async block(height?: number): Promise<responses.BlockResponse> {
-    const query: requests.BlockRequest = { method: requests.Method.Block, params: { height: height } };
+    const query: requests.BlockRequest = {
+      method: requests.Method.Block,
+      params: {
+        height: height,
+      },
+    };
     return this.doCall(query, Params.encodeBlock, Responses.decodeBlock);
   }
 
   public async blockResults(height?: number): Promise<responses.BlockResultsResponse> {
     const query: requests.BlockResultsRequest = {
       method: requests.Method.BlockResults,
-      params: { height: height },
+      params: {
+        height: height,
+      },
     };
     return this.doCall(query, Params.encodeBlockResults, Responses.decodeBlockResults);
   }
@@ -112,7 +133,10 @@ export class Tm2Client {
    * @see https://docs.tendermint.com/master/rpc/#/Info/block_search
    */
   public async blockSearch(params: requests.BlockSearchParams): Promise<responses.BlockSearchResponse> {
-    const query: requests.BlockSearchRequest = { params: params, method: requests.Method.BlockSearch };
+    const query: requests.BlockSearchRequest = {
+      params: params,
+      method: requests.Method.BlockSearch,
+    };
     const resp = await this.doCall(query, Params.encodeBlockSearch, Responses.decodeBlockSearch);
     return {
       ...resp,
@@ -132,11 +156,15 @@ export class Tm2Client {
     let done = false;
 
     while (!done) {
-      const resp = await this.blockSearch({ ...params, page: page });
+      const resp = await this.blockSearch({
+        ...params,
+        page: page,
+      });
       blocks.push(...resp.blocks);
       if (blocks.length < resp.totalCount) {
         page++;
-      } else {
+      }
+      else {
         done = true;
       }
     }
@@ -175,7 +203,10 @@ export class Tm2Client {
   public async broadcastTxSync(
     params: requests.BroadcastTxParams,
   ): Promise<responses.BroadcastTxSyncResponse> {
-    const query: requests.BroadcastTxRequest = { params: params, method: requests.Method.BroadcastTxSync };
+    const query: requests.BroadcastTxRequest = {
+      params: params,
+      method: requests.Method.BroadcastTxSync,
+    };
     return this.doCall(query, Params.encodeBroadcastTx, Responses.decodeBroadcastTxSync);
   }
 
@@ -187,7 +218,10 @@ export class Tm2Client {
   public async broadcastTxAsync(
     params: requests.BroadcastTxParams,
   ): Promise<responses.BroadcastTxAsyncResponse> {
-    const query: requests.BroadcastTxRequest = { params: params, method: requests.Method.BroadcastTxAsync };
+    const query: requests.BroadcastTxRequest = {
+      params: params,
+      method: requests.Method.BroadcastTxAsync,
+    };
     return this.doCall(query, Params.encodeBroadcastTx, Responses.decodeBroadcastTxAsync);
   }
 
@@ -199,47 +233,67 @@ export class Tm2Client {
   public async broadcastTxCommit(
     params: requests.BroadcastTxParams,
   ): Promise<responses.BroadcastTxCommitResponse> {
-    const query: requests.BroadcastTxRequest = { params: params, method: requests.Method.BroadcastTxCommit };
+    const query: requests.BroadcastTxRequest = {
+      params: params,
+      method: requests.Method.BroadcastTxCommit,
+    };
     return this.doCall(query, Params.encodeBroadcastTx, Responses.decodeBroadcastTxCommit);
   }
 
   public async commit(height?: number): Promise<responses.CommitResponse> {
-    const query: requests.CommitRequest = { method: requests.Method.Commit, params: { height: height } };
+    const query: requests.CommitRequest = {
+      method: requests.Method.Commit,
+      params: {
+        height: height,
+      },
+    };
     return this.doCall(query, Params.encodeCommit, Responses.decodeCommit);
   }
 
   public async genesis(): Promise<responses.GenesisResponse> {
-    const query: requests.GenesisRequest = { method: requests.Method.Genesis };
+    const query: requests.GenesisRequest = {
+      method: requests.Method.Genesis,
+    };
     return this.doCall(query, Params.encodeGenesis, Responses.decodeGenesis);
   }
 
   public async health(): Promise<responses.HealthResponse> {
-    const query: requests.HealthRequest = { method: requests.Method.Health };
+    const query: requests.HealthRequest = {
+      method: requests.Method.Health,
+    };
     return this.doCall(query, Params.encodeHealth, Responses.decodeHealth);
   }
 
   public async numUnconfirmedTxs(): Promise<responses.NumUnconfirmedTxsResponse> {
-    const query: requests.NumUnconfirmedTxsRequest = { method: requests.Method.NumUnconfirmedTxs };
+    const query: requests.NumUnconfirmedTxsRequest = {
+      method: requests.Method.NumUnconfirmedTxs,
+    };
     return this.doCall(query, Params.encodeNumUnconfirmedTxs, Responses.decodeNumUnconfirmedTxs);
   }
 
   public async status(): Promise<responses.StatusResponse> {
-    const query: requests.StatusRequest = { method: requests.Method.Status };
+    const query: requests.StatusRequest = {
+      method: requests.Method.Status,
+    };
     return this.doCall(query, Params.encodeStatus, Responses.decodeStatus);
   }
 
-  public subscribeNewBlock(): Stream<responses.NewBlockEvent> {
+  public subscribeNewBlock(): Stream<responses.Block> {
     const request: requests.SubscribeRequest = {
       method: requests.Method.Subscribe,
-      query: { type: requests.SubscriptionEventType.NewBlock },
+      query: {
+        type: requests.SubscriptionEventType.NewBlock,
+      },
     };
     return this.subscribe(request, Responses.decodeNewBlockEvent);
   }
 
-  public subscribeNewBlockHeader(): Stream<responses.NewBlockHeaderEvent> {
+  public subscribeNewBlockHeader(): Stream<responses.Header> {
     const request: requests.SubscribeRequest = {
       method: requests.Method.Subscribe,
-      query: { type: requests.SubscriptionEventType.NewBlockHeader },
+      query: {
+        type: requests.SubscriptionEventType.NewBlockHeader,
+      },
     };
     return this.subscribe(request, Responses.decodeNewBlockHeaderEvent);
   }
@@ -261,7 +315,10 @@ export class Tm2Client {
    * @see https://docs.tendermint.com/master/rpc/#/Info/tx
    */
   public async tx(params: requests.TxParams): Promise<responses.TxResponse> {
-    const query: requests.TxRequest = { params: params, method: requests.Method.Tx };
+    const query: requests.TxRequest = {
+      params: params,
+      method: requests.Method.Tx,
+    };
     return this.doCall(query, Params.encodeTx, Responses.decodeTx);
   }
 
@@ -271,7 +328,10 @@ export class Tm2Client {
    * @see https://docs.tendermint.com/master/rpc/#/Info/tx_search
    */
   public async txSearch(params: requests.TxSearchParams): Promise<responses.TxSearchResponse> {
-    const query: requests.TxSearchRequest = { params: params, method: requests.Method.TxSearch };
+    const query: requests.TxSearchRequest = {
+      params: params,
+      method: requests.Method.TxSearch,
+    };
     return this.doCall(query, Params.encodeTxSearch, Responses.decodeTxSearch);
   }
 
@@ -283,11 +343,15 @@ export class Tm2Client {
     let done = false;
 
     while (!done) {
-      const resp = await this.txSearch({ ...params, page: page });
+      const resp = await this.txSearch({
+        ...params,
+        page: page,
+      });
       txs.push(...resp.txs);
       if (txs.length < resp.totalCount) {
         page++;
-      } else {
+      }
+      else {
         done = true;
       }
     }
@@ -322,7 +386,8 @@ export class Tm2Client {
       blockHeight = blockHeight || response.blockHeight;
       if (validators.length < response.total) {
         page++;
-      } else {
+      }
+      else {
         done = true;
       }
     }

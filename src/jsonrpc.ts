@@ -1,4 +1,6 @@
-import { JsonRpcRequest } from "@cosmjs/json-rpc";
+import {
+  JsonRpcRequest,
+} from "@cosmjs/json-rpc";
 
 const numbersWithoutZero = "123456789";
 
@@ -12,7 +14,9 @@ function randomNumericChar(): string {
  */
 function randomId(): number {
   return parseInt(
-    Array.from({ length: 12 })
+    Array.from({
+      length: 12,
+    })
       .map(() => randomNumericChar())
       .join(""),
     10,
@@ -21,7 +25,12 @@ function randomId(): number {
 
 /** Creates a JSON-RPC request with random ID */
 export function createJsonRpcRequest(method: string, params?: Record<string, any>): JsonRpcRequest {
-  const paramsCopy = params ? { ...params } : {};
+  const paramsCopy = params
+    ? {
+      ...params,
+    }
+    : {
+    };
   return {
     jsonrpc: "2.0",
     id: randomId(),

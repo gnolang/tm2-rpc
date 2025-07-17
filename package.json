@@ -1,12 +1,7 @@
 {
-  "name": "@cosmjs/tendermint-rpc",
+  "name": "tm2-rpc",
   "version": "0.34.0",
-  "description": "Tendermint RPC clients",
-  "contributors": [
-    "IOV SAS <admin@iov.one>",
-    "Confio OÜ <hello@confio.tech>",
-    "Will Clark <willclarktech@users.noreply.github.com>"
-  ],
+  "description": "Tendermint2 RPC clients",
   "license": "Apache-2.0",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -16,30 +11,14 @@
     "!*.spec.*",
     "!**/testdata/"
   ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/cosmos/cosmjs/tree/main/packages/tendermint-rpc"
-  },
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org"
   },
   "scripts": {
-    "docs": "typedoc --options typedoc.js",
-    "lint": "eslint --max-warnings 0 \"./**/*.ts\" \"./*.js\"",
-    "lint-fix": "eslint --fix --max-warnings 0 \"./**/*.ts\" \"./*.js\"",
-    "format": "prettier --write --log-level warn \"./src/**/*.ts\"",
-    "format-text": "prettier --write \"./*.md\"",
-    "test-node": "yarn node jasmine-testrunner.js",
-    "test-edge": "yarn pack-web && karma start --single-run --browsers Edge",
-    "test-firefox": "yarn pack-web && karma start --single-run --browsers Firefox",
-    "test-chrome": "yarn pack-web && karma start --single-run --browsers ChromeHeadless",
-    "test-safari": "yarn pack-web && karma start --single-run --browsers Safari",
-    "test": "yarn build-or-skip && yarn test-node",
-    "coverage": "nyc --reporter=text --reporter=lcov yarn test --quiet",
-    "build": "rm -rf ./build && tsc",
-    "build-or-skip": "[ -n \"$SKIP_BUILD\" ] || yarn build",
-    "pack-web": "yarn build-or-skip && webpack --mode development --config webpack.web.config.js"
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
+    "build": "rm -rf ./build && tsc"
   },
   "dependencies": {
     "@cosmjs/crypto": "^0.34.0",
@@ -54,7 +33,9 @@
     "xstream": "^11.14.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.30.1",
     "@types/node": "^20.14.8",
+    "@stylistic/eslint-plugin": "^5.1.0",
     "@vitest/coverage-istanbul": "^3.2.4",
     "eslint": "^9.30.1",
     "eslint-plugin-simple-import-sort": "^12.1.1",
