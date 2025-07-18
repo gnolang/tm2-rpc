@@ -60,14 +60,27 @@ export interface BlockResponse {
   readonly blockMeta: BlockMeta
   readonly block: Block
 }
-
+export interface TxResult {
+  readonly responseBase: ResponseBase
+  readonly gasWanted: bigint
+  readonly gasUsed: bigint
+}
+export interface BeginBlock {
+  readonly responseBase: ResponseBase
+}
+export interface EndBlock {
+  readonly responseBase: ResponseBase
+  readonly validatorUpdates: null
+  readonly consensusParams: null
+  readonly events: null
+}
 export interface BlockResultsResponse {
   readonly height: number
-  readonly results: readonly TxData[]
-  readonly validatorUpdates: readonly ValidatorUpdate[]
-  readonly consensusUpdates?: ConsensusParams
-  readonly beginBlockEvents: readonly Event[]
-  readonly endBlockEvents: readonly Event[]
+  readonly results: {
+    deliverTx: readonly TxResult[]
+    beginBlock: BeginBlock
+    endBlock: EndBlock
+  }
 }
 
 export interface BlockSearchResponse {
@@ -170,6 +183,13 @@ export interface ValidatorsResponse {
   readonly total: number
 }
 
+export interface ResponseBase {
+  readonly error: string | null
+  readonly data: Uint8Array
+  readonly events: readonly Event[]
+  readonly log: string
+  readonly info: string
+}
 // Events
 
 export interface TxEvent {
@@ -193,8 +213,10 @@ export interface EventAttribute {
 }
 
 export interface Event {
+  readonly "@type": string
   readonly type: string
-  readonly attributes: readonly EventAttribute[]
+  readonly pkg_path: string
+  readonly attrs: readonly EventAttribute[]
 }
 
 export interface TxData {

@@ -7,52 +7,52 @@ export enum Method {
   AbciInfo = "abci_info",
   AbciQuery = "abci_query",
   Block = "block",
-  /** Get block headers for minHeight <= height <= maxHeight. */
-  Blockchain = "blockchain",
   BlockResults = "block_results",
-  BlockSearch = "block_search",
+  Blockchain = "blockchain",
   BroadcastTxAsync = "broadcast_tx_async",
   BroadcastTxSync = "broadcast_tx_sync",
   BroadcastTxCommit = "broadcast_tx_commit",
   Commit = "commit",
+  ConsensusParams = "consensus_params",
+  ConsensusState = "consensus_state",
+  DumpConsensusState = "dump_consensus_state",
   Genesis = "genesis",
   Health = "health",
+  NetInfo = "net_info",
   NumUnconfirmedTxs = "num_unconfirmed_txs",
   Status = "status",
-  Subscribe = "subscribe",
   Tx = "tx",
-  TxSearch = "tx_search",
+  UnconfirmedTxs = "unconfirmed_txs",
+  UnsafeFlushMempool = "unsafe_flush_mempool",
+  UnsafeStartCpuProfiler = "unsafe_start_cpu_profiler",
+  UnsafeStopCpuProfiler = "unsafe_stop_cpu_profiler",
+  UnsafeWriteHeapProfile = "unsafe_write_heap_profile",
   Validators = "validators",
-  Unsubscribe = "unsubscribe",
 }
 
 export type Request
   = | AbciInfoRequest
     | AbciQueryRequest
     | BlockRequest
-    | BlockSearchRequest
     | BlockchainRequest
     | BlockResultsRequest
     | BroadcastTxRequest
     | CommitRequest
+    | ConsensusStateRequest
+    | ConsensusParamsRequest
+    | DumpConsensusStateRequest
     | GenesisRequest
     | HealthRequest
+    | NetInfoRequest
     | NumUnconfirmedTxsRequest
     | StatusRequest
     | TxRequest
-    | TxSearchRequest
+    | UnconfirmedTxsRequest
+    | UnsafeFlushMempoolRequest
+    | UnsafeStartCpuProfilerRequest
+    | UnsafeStopCpuProfilerRequest
+    | UnsafeWriteHeapProfileRequest
     | ValidatorsRequest;
-
-/**
- * Raw values must match the tendermint event name
- *
- * @see https://godoc.org/github.com/tendermint/tendermint/types#pkg-constants
- */
-export enum SubscriptionEventType {
-  NewBlock = "NewBlock",
-  NewBlockHeader = "NewBlockHeader",
-  Tx = "Tx",
-}
 
 export interface AbciInfoRequest {
   readonly method: Method.AbciInfo
@@ -100,18 +100,6 @@ export interface BlockResultsRequest {
   }
 }
 
-export interface BlockSearchRequest {
-  readonly method: Method.BlockSearch
-  readonly params: BlockSearchParams
-}
-
-export interface BlockSearchParams {
-  readonly query: string
-  readonly page?: number
-  readonly per_page?: number
-  readonly order_by?: string
-}
-
 export interface BroadcastTxRequest {
   readonly method: Method.BroadcastTxAsync | Method.BroadcastTxSync | Method.BroadcastTxCommit
   readonly params: BroadcastTxParams
@@ -128,6 +116,18 @@ export interface CommitRequest {
   }
 }
 
+export interface ConsensusParamsRequest {
+  readonly method: Method.ConsensusParams
+  readonly params: {
+    readonly height?: number
+  }
+}
+export interface ConsensusStateRequest {
+  readonly method: Method.ConsensusState
+}
+export interface DumpConsensusStateRequest {
+  readonly method: Method.DumpConsensusState
+}
 export interface GenesisRequest {
   readonly method: Method.Genesis
 }
@@ -135,7 +135,9 @@ export interface GenesisRequest {
 export interface HealthRequest {
   readonly method: Method.Health
 }
-
+export interface NetInfoRequest {
+  readonly method: Method.NetInfo
+}
 export interface NumUnconfirmedTxsRequest {
   readonly method: Method.NumUnconfirmedTxs
 }
@@ -143,15 +145,6 @@ export interface NumUnconfirmedTxsRequest {
 export interface StatusRequest {
   readonly method: Method.Status
 }
-
-export interface SubscribeRequest {
-  readonly method: Method.Subscribe
-  readonly query: {
-    readonly type: SubscriptionEventType
-    readonly raw?: string
-  }
-}
-
 export interface QueryTag {
   readonly key: string
   readonly value: string
@@ -166,21 +159,30 @@ export interface TxParams {
   readonly hash: Uint8Array
   readonly prove?: boolean
 }
-
-// TODO: clarify this type
-export interface TxSearchRequest {
-  readonly method: Method.TxSearch
-  readonly params: TxSearchParams
+export interface UnconfirmedTxsRequest {
+  readonly method: Method.UnconfirmedTxs
+  readonly params: {
+    readonly limit?: number
+  }
 }
-
-export interface TxSearchParams {
-  readonly query: string
-  readonly prove?: boolean
-  readonly page?: number
-  readonly per_page?: number
-  readonly order_by?: string
+export interface UnsafeFlushMempoolRequest {
+  readonly method: Method.UnsafeFlushMempool
 }
-
+export interface UnsafeStartCpuProfilerRequest {
+  readonly method: Method.UnsafeStartCpuProfiler
+  readonly params: {
+    readonly filename?: string
+  }
+}
+export interface UnsafeStopCpuProfilerRequest {
+  readonly method: Method.UnsafeStopCpuProfiler
+}
+export interface UnsafeWriteHeapProfileRequest {
+  readonly method: Method.UnsafeWriteHeapProfile
+  readonly params: {
+    readonly filename?: string
+  }
+}
 export interface ValidatorsRequest {
   readonly method: Method.Validators
   readonly params: ValidatorsParams

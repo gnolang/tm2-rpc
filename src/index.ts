@@ -41,6 +41,6 @@ export {
 
 const init = async () => {
   const client = await connectTm2("http://localhost:26657");
-  console.log(await client.block(2));
+  console.log(await client.blockResults(156));
 };
 init();

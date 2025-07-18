@@ -36,6 +36,22 @@ import {
 } from "../hasher";
 import * as responses from "../responses";
 
+interface RpcResponseBase {
+  readonly Error: string | null
+  readonly Data: string | null
+  readonly Events: RpcEvent[]
+  readonly Log: string
+  readonly Info: string
+}
+function decodeResponseBase(data: RpcResponseBase): responses.ResponseBase {
+  return {
+    error: data.Error ?? null,
+    data: data.Data ? fromBase64(data.Data) : new Uint8Array(),
+    events: data.Events ? decodeEvents(data.Events) : [],
+    log: data.Log,
+    info: data.Info,
+  };
+}
 interface AbciInfoResult {
   readonly response: RpcAbciInfoResponse
 }
@@ -123,10 +139,6 @@ function decodeAbciQuery(data: RpcAbciQueryResponse): responses.AbciQueryRespons
  * EventAttribute from Tendermint. In 0.35 the type of key and value was changed
  * from bytes to string, such that no base64 encoding is used anymore.
  */
-interface RpcEventAttribute {
-  readonly key: string
-  readonly value?: string
-}
 
 function decodeEventAttribute(attribute: RpcEventAttribute): responses.EventAttribute {
   return {
@@ -139,16 +151,12 @@ function decodeAttributes(attributes: readonly RpcEventAttribute[]): responses.E
   return assertArray(attributes).map(decodeEventAttribute);
 }
 
-interface RpcEvent {
-  readonly type: string
-  /** Can be omitted (see https://github.com/cosmos/cosmjs/pull/1198) */
-  readonly attributes?: readonly RpcEventAttribute[]
-}
-
 export function decodeEvent(event: RpcEvent): responses.Event {
   return {
+    "@type": assertNotEmpty(event["@type"]),
     type: event.type,
-    attributes: event.attributes ? decodeAttributes(event.attributes) : [],
+    attrs: event.attrs ? decodeAttributes(event.attrs) : [],
+    pkg_path: assertNotEmpty(event.pkg_path), // This is not used in the Tendermint API, but we keep it for compatibility
   };
 }
 
@@ -156,26 +164,17 @@ function decodeEvents(events: readonly RpcEvent[]): readonly responses.Event[] {
   return assertArray(events).map(decodeEvent);
 }
 
-interface RpcTxData {
-  readonly codespace?: string
-  readonly code?: number
-  readonly log?: string
-  /** base64 encoded */
-  readonly data?: string
-  readonly events?: readonly RpcEvent[]
-  readonly gas_wanted?: string
-  readonly gas_used?: string
+interface RpcTxResult {
+  readonly ResponseBase: RpcResponseBase
+  readonly GasWanted?: string
+  readonly GasUsed?: string
 }
 
-function decodeTxData(data: RpcTxData): responses.TxData {
+function decodeTxResult(data: RpcTxResult): responses.TxResult {
   return {
-    code: apiToSmallInt(assertNumber(data.code ?? 0)),
-    codespace: data.codespace,
-    log: data.log,
-    data: may(fromBase64, data.data),
-    events: data.events ? decodeEvents(data.events) : [],
-    gasWanted: apiToBigInt(data.gas_wanted ?? "0"),
-    gasUsed: apiToBigInt(data.gas_used ?? "0"),
+    responseBase: decodeResponseBase(data.ResponseBase),
+    gasWanted: apiToBigInt(data.GasWanted ?? "0"),
+    gasUsed: apiToBigInt(data.GasUsed ?? "0"),
   };
 }
 
@@ -299,27 +298,62 @@ export function decodeValidatorUpdate(data: RpcValidatorUpdate): responses.Valid
     votingPower: apiToBigInt(data.power ?? "0"),
   };
 }
-
+interface RpcBeginBlock {
+  ResponseBase: RpcResponseBase
+}
+interface RpcEndBlock {
+  ResponseBase: RpcResponseBase
+  // TOOO: Need to check and fill out the following types
+  ValidatorUpdates: null
+  ConsensusParams: null
+  Events: null
+}
 interface RpcBlockResultsResponse {
   readonly height: string
-  readonly txs_results: readonly RpcTxData[] | null
-  readonly begin_block_events: readonly RpcEvent[] | null
-  readonly end_block_events: readonly RpcEvent[] | null
-  readonly validator_updates: readonly RpcValidatorUpdate[] | null
-  readonly consensus_param_updates: RpcConsensusParams | null
+  readonly results: {
+    readonly deliver_tx: readonly RpcTxResult[]
+    readonly begin_block: RpcBeginBlock
+    readonly end_block: RpcEndBlock
+  }
 }
 
 function decodeBlockResults(data: RpcBlockResultsResponse): responses.BlockResultsResponse {
   return {
     height: apiToSmallInt(assertNotEmpty(data.height)),
-    results: (data.txs_results || []).map(decodeTxData),
-    validatorUpdates: (data.validator_updates || []).map(decodeValidatorUpdate),
-    consensusUpdates: may(decodeConsensusParams, data.consensus_param_updates),
-    beginBlockEvents: decodeEvents(data.begin_block_events || []),
-    endBlockEvents: decodeEvents(data.end_block_events || []),
+    results: {
+      deliverTx: decodeTxResults(data.results.deliver_tx ?? []),
+      beginBlock: decodeBeginBlock(data.results.begin_block),
+      endBlock: decodeEndBlock(data.results.end_block),
+    },
   };
 }
+function decodeBeginBlock(data: RpcBeginBlock): responses.BeginBlock {
+  return {
+    responseBase: decodeResponseBase(data.ResponseBase),
+  };
+}
+function decodeEndBlock(data: RpcEndBlock): responses.EndBlock {
+  return {
+    responseBase: decodeResponseBase(data.ResponseBase),
+    validatorUpdates: null,
+    consensusParams: null,
+    events: null,
+  };
+}
+function decodeTxResults(txs: readonly RpcTxResult[]): readonly responses.TxResult[] {
+  return assertArray(txs).map(decodeTxResult);
+}
+export interface RpcEventAttribute {
+  readonly key: string
+  readonly value: string
+}
 
+export interface RpcEvent {
+  readonly "@type": string
+  readonly type: string
+  readonly pkg_path: string
+  readonly attrs: readonly RpcEventAttribute[]
+}
 interface RpcBlockId {
   /** hex encoded */
   readonly hash: string
@@ -430,6 +464,28 @@ interface RpcBroadcastTxSyncResponse extends RpcTxData {
   readonly hash: string
 }
 
+interface RpcTxData {
+  readonly codespace?: string
+  readonly code?: number
+  readonly log?: string
+  /** base64 encoded */
+  readonly data?: string
+  readonly events?: readonly RpcEvent[]
+  readonly gas_wanted?: string
+  readonly gas_used?: string
+}
+
+function decodeTxData(data: RpcTxData): responses.TxData {
+  return {
+    code: apiToSmallInt(assertNumber(data.code ?? 0)),
+    codespace: data.codespace,
+    log: data.log,
+    data: may(fromBase64, data.data),
+    events: data.events ? decodeEvents(data.events) : [],
+    gasWanted: apiToBigInt(data.gas_wanted ?? "0"),
+    gasUsed: apiToBigInt(data.gas_used ?? "0"),
+  };
+}
 function decodeBroadcastTxSync(data: RpcBroadcastTxSyncResponse): responses.BroadcastTxSyncResponse {
   return {
     ...decodeTxData(data),
