@@ -14,18 +14,25 @@ export type Response
     | AbciQueryResponse
     | BlockResponse
     | BlockResultsResponse
-    | BlockSearchResponse
     | BlockchainResponse
     | BroadcastTxAsyncResponse
     | BroadcastTxSyncResponse
     | BroadcastTxCommitResponse
     | CommitResponse
+    | ConsensusParamsResponse
+    | ConsensusStateResponse
+    | DumpConsensusStateResponse
     | GenesisResponse
     | HealthResponse
+    | NetInfoResponse
     | NumUnconfirmedTxsResponse
     | StatusResponse
     | TxResponse
-    | TxSearchResponse
+    | UnconfirmedTxsResponse
+    | UnsafeFlushMempoolResponse
+    | UnsafeStartCpuProfilerResponse
+    | UnsafeStopCpuProfilerResponse
+    | UnsafeWriteHeapProfileResponse
     | ValidatorsResponse;
 
 export interface AbciInfoResponse {
@@ -45,15 +52,11 @@ export interface QueryProof {
 }
 
 export interface AbciQueryResponse {
+  readonly responseBase: ResponseBase
   readonly key: Uint8Array
   readonly value: Uint8Array
   readonly proof?: QueryProof
   readonly height?: number
-  readonly index?: number
-  readonly code?: number // non-falsy for errors
-  readonly codespace: string
-  readonly log?: string
-  readonly info: string
 }
 
 export interface BlockResponse {
@@ -81,11 +84,6 @@ export interface BlockResultsResponse {
     beginBlock: BeginBlock
     endBlock: EndBlock
   }
-}
-
-export interface BlockSearchResponse {
-  readonly blocks: readonly BlockResponse[]
-  readonly totalCount: number
 }
 
 export interface BlockchainResponse {

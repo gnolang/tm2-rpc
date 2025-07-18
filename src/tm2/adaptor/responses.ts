@@ -98,40 +98,27 @@ function decodeQueryProof(data: RpcQueryProof): responses.QueryProof {
 }
 
 interface RpcAbciQueryResponse {
+  // TODO: Veify how these are encoded
+  readonly Key?: string | null
   /**
    * Base64 encoded
    *
    * This can be null since this is a byte slice and due to
    * https://github.com/tendermint/tendermint/blob/v0.35.7/abci/types/result.go#L53
    */
-  readonly key?: string | null
-  /**
-   * Base64 encoded
-   *
-   * This can be null since this is a byte slice and due to
-   * https://github.com/tendermint/tendermint/blob/v0.35.7/abci/types/result.go#L53
-   */
-  readonly value?: string | null
-  readonly proofOps?: RpcQueryProof | null
-  readonly height?: string
-  readonly index?: string
-  readonly code?: string // only for errors
-  readonly codespace?: string
-  readonly log?: string
-  readonly info?: string
+  readonly Value?: string | null
+  readonly Proof?: string| null
+  readonly Height?: string
+  readonly ResponseBase: RpcResponseBase
 }
 
 function decodeAbciQuery(data: RpcAbciQueryResponse): responses.AbciQueryResponse {
   return {
-    key: fromBase64(assertString(data.key ?? "")),
-    value: fromBase64(assertString(data.value ?? "")),
-    proof: may(decodeQueryProof, data.proofOps),
-    height: may(apiToSmallInt, data.height),
-    code: may(apiToSmallInt, data.code),
-    codespace: assertString(data.codespace ?? ""),
-    index: may(apiToSmallInt, data.index),
-    log: data.log,
-    info: assertString(data.info ?? ""),
+    key: fromBase64(assertString(data.Key ?? "")),
+    value: fromBase64(assertString(data.Value ?? "")),
+    proof: may(decodeQueryProof, data.Proof),
+    height: may(apiToSmallInt, data.Height),
+    responseBase: decodeResponseBase(data.ResponseBase),
   };
 }
 

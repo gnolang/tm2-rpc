@@ -1,5 +1,5 @@
 /**
- * RPC methods as documented in https://docs.tendermint.com/master/rpc/
+ * RPC methods as (mostly) documented in https://github.com/onbloc/gnoland-tutorials/blob/main/docs/gnoland-rpc-endpoints.md
  *
  * Enum raw value must match the spelling in the "shell" example call (snake_case)
  */

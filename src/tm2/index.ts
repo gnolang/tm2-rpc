@@ -5,8 +5,6 @@ export type {
   BlockchainRequest,
   BlockRequest,
   BlockResultsRequest,
-  BlockSearchParams,
-  BlockSearchRequest,
   BroadcastTxParams,
   BroadcastTxRequest,
   CommitRequest,
@@ -18,13 +16,11 @@ export type {
   StatusRequest,
   TxParams,
   TxRequest,
-  TxSearchParams,
-  TxSearchRequest,
   ValidatorsParams,
   ValidatorsRequest,
 } from "./requests";
 export {
-  Method, SubscriptionEventType,
+  Method,
 } from "./requests";
 export type {
   AbciInfoResponse,
