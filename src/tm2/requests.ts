@@ -23,10 +23,12 @@ export enum Method {
   Status = "status",
   Tx = "tx",
   UnconfirmedTxs = "unconfirmed_txs",
+  /* TODO: Verify if we need these in a js client
   UnsafeFlushMempool = "unsafe_flush_mempool",
   UnsafeStartCpuProfiler = "unsafe_start_cpu_profiler",
   UnsafeStopCpuProfiler = "unsafe_stop_cpu_profiler",
   UnsafeWriteHeapProfile = "unsafe_write_heap_profile",
+  */
   Validators = "validators",
 }
 
@@ -48,10 +50,12 @@ export type Request
     | StatusRequest
     | TxRequest
     | UnconfirmedTxsRequest
+    /* TODO: Verify if we need these in a js client
     | UnsafeFlushMempoolRequest
     | UnsafeStartCpuProfilerRequest
     | UnsafeStopCpuProfilerRequest
     | UnsafeWriteHeapProfileRequest
+    */
     | ValidatorsRequest;
 
 export interface AbciInfoRequest {
@@ -165,6 +169,8 @@ export interface UnconfirmedTxsRequest {
     readonly limit?: number
   }
 }
+
+/* TODO: Verify if we need these in a js client
 export interface UnsafeFlushMempoolRequest {
   readonly method: Method.UnsafeFlushMempool
 }
@@ -183,6 +189,7 @@ export interface UnsafeWriteHeapProfileRequest {
     readonly filename?: string
   }
 }
+*/
 export interface ValidatorsRequest {
   readonly method: Method.Validators
   readonly params: ValidatorsParams

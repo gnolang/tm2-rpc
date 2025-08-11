@@ -107,7 +107,7 @@ interface RpcAbciQueryResponse {
    * https://github.com/tendermint/tendermint/blob/v0.35.7/abci/types/result.go#L53
    */
   readonly Value?: string | null
-  readonly Proof?: string| null
+  readonly Proof?: RpcQueryProof | null
   readonly Height?: string
   readonly ResponseBase: RpcResponseBase
 }
@@ -212,8 +212,11 @@ function decodePubkey(data: RpcPubkey): ValidatorPubkey {
 }
 
 interface RpcBlockParams {
-  readonly max_bytes: string
-  readonly max_gas: string
+  readonly MaxTxBytes: string
+  readonly MaxDataBytes: string
+  readonly MaxBlockBytes: string
+  readonly MaxGas: string
+  readonly TimeIotaMs: string
 }
 
 /**
@@ -224,20 +227,23 @@ interface RpcBlockParams {
  */
 function decodeBlockParams(data: RpcBlockParams): responses.BlockParams {
   return {
-    maxBytes: apiToSmallInt(assertNotEmpty(data.max_bytes)),
-    maxGas: apiToSmallInt(assertNotEmpty(data.max_gas)),
+    maxBlockBytes: apiToSmallInt(assertNotEmpty(data.MaxBlockBytes)),
+    maxDataBytes: apiToSmallInt(assertNotEmpty(data.MaxDataBytes)),
+    maxTxBytes: apiToSmallInt(assertNotEmpty(data.MaxTxBytes)),
+    maxGas: apiToSmallInt(assertNotEmpty(data.MaxGas)),
+    timeIotaMs: apiToSmallInt(assertNotEmpty(data.TimeIotaMs)),
   };
 }
 
-interface RpcEvidenceParams {
-  readonly max_age_num_blocks: string
-  readonly max_age_duration: string
+interface RpcValidatorParams {
+  readonly PubKeyTypeURLs: readonly string[]
 }
 
-function decodeEvidenceParams(data: RpcEvidenceParams): responses.EvidenceParams {
+function decodeValidatorParams(data: RpcValidatorParams): responses.ValidatorParams {
   return {
-    maxAgeNumBlocks: apiToSmallInt(assertNotEmpty(data.max_age_num_blocks)),
-    maxAgeDuration: apiToSmallInt(assertNotEmpty(data.max_age_duration)),
+    pubKeyTypeUrls: assertArray(data.PubKeyTypeURLs).map((url) => {
+      return assertNotEmpty(url);
+    }),
   };
 }
 
@@ -261,14 +267,14 @@ function decodeEvidenceParams(data: RpcEvidenceParams): responses.EvidenceParams
  * }
  */
 interface RpcConsensusParams {
-  readonly block: RpcBlockParams
-  readonly evidence: RpcEvidenceParams
+  readonly Block: RpcBlockParams
+  readonly Validator: RpcValidatorParams
 }
 
 function decodeConsensusParams(data: RpcConsensusParams): responses.ConsensusParams {
   return {
-    block: decodeBlockParams(assertObject(data.block)),
-    evidence: decodeEvidenceParams(assertObject(data.evidence)),
+    block: decodeBlockParams(assertObject(data.Block)),
+    validator: decodeValidatorParams(assertObject(data.Validator)),
   };
 }
 
@@ -549,7 +555,12 @@ function decodeCommitResponse(data: RpcCommitResponse): responses.CommitResponse
     commit: decodeCommit(data.signed_header.commit),
   };
 }
-
+function decodeConsensusParamsResponse(data: RpcConsensusParamsResponse): responses.ConsensusParamsResponse {
+  return {
+    blockHeight: apiToSmallInt(data.block_height),
+    consensusParams: decodeConsensusParams(assertObject(data.consensus_params)),
+  };
+}
 interface RpcValidatorGenesis {
   /** hex-encoded */
   readonly address: string
@@ -564,6 +575,10 @@ export function decodeValidatorGenesis(data: RpcValidatorGenesis): responses.Val
     pubkey: decodePubkey(assertObject(data.pub_key)),
     votingPower: apiToBigInt(assertNotEmpty(data.power)),
   };
+}
+interface RpcConsensusParamsResponse {
+  readonly block_height: string
+  readonly consensus_params: RpcConsensusParams
 }
 
 interface RpcGenesisResponse {
@@ -839,14 +854,6 @@ interface RpcBlockSearchResponse {
   readonly blocks: readonly RpcBlockResponse[]
   readonly total_count: string
 }
-
-function decodeBlockSearch(data: RpcBlockSearchResponse): responses.BlockSearchResponse {
-  return {
-    totalCount: apiToSmallInt(assertNotEmpty(data.total_count)),
-    blocks: assertArray(data.blocks).map(decodeBlockResponse),
-  };
-}
-
 interface RpcNumUnconfirmedTxsResponse {
   readonly total: string
   readonly total_bytes: string
@@ -876,10 +883,6 @@ export class Responses {
     return decodeBlockResults(response.result as RpcBlockResultsResponse);
   }
 
-  public static decodeBlockSearch(response: JsonRpcSuccessResponse): responses.BlockSearchResponse {
-    return decodeBlockSearch(response.result as RpcBlockSearchResponse);
-  }
-
   public static decodeBlockchain(response: JsonRpcSuccessResponse): responses.BlockchainResponse {
     return decodeBlockchain(response.result as RpcBlockchainResponse);
   }
@@ -896,6 +899,10 @@ export class Responses {
     response: JsonRpcSuccessResponse,
   ): responses.BroadcastTxCommitResponse {
     return decodeBroadcastTxCommit(response.result as RpcBroadcastTxCommitResponse);
+  }
+
+  public static decodeConsensusParams(response: JsonRpcSuccessResponse): responses.ConsensusParamsResponse {
+    return decodeConsensusParamsResponse(response.result as RpcConsensusParamsResponse);
   }
 
   public static decodeCommit(response: JsonRpcSuccessResponse): responses.CommitResponse {

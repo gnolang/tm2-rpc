@@ -29,10 +29,12 @@ export type Response
     | StatusResponse
     | TxResponse
     | UnconfirmedTxsResponse
+    /* TODO: Verify if we need these in a js client
     | UnsafeFlushMempoolResponse
     | UnsafeStartCpuProfilerResponse
     | UnsafeStopCpuProfilerResponse
     | UnsafeWriteHeapProfileResponse
+    */
     | ValidatorsResponse;
 
 export interface AbciInfoResponse {
@@ -131,6 +133,23 @@ export interface CommitResponse {
   readonly header: Header
   readonly commit: Commit
   readonly canonical: boolean
+}
+export interface ConsensusParamsResponse {
+  readonly blockHeight: number
+  readonly consensusParams: ConsensusParams
+}
+export interface RoundState {
+  readonly height: number
+  readonly round: number
+  readonly step: number
+  readonly startTime: ReadonlyDateWithNanoseconds
+  readonly proposalBlockHash: Uint8Array
+  readonly lockedBlockHash: Uint8Array
+  readonly validBlockHash: Uint8Array
+  readonly heightVoteSet: any
+}
+export interface ConsensusStateResponse {
+  readonly roundState: RoundState
 }
 
 export interface GenesisResponse {
@@ -379,12 +398,19 @@ export interface ValidatorUpdate {
 
 export interface ConsensusParams {
   readonly block: BlockParams
-  readonly evidence: EvidenceParams
+  readonly validator: ValidatorParams
+}
+
+export interface ValidatorParams {
+  readonly pubKeyTypeUrls: readonly string[]
 }
 
 export interface BlockParams {
-  readonly maxBytes: number
+  readonly maxDataBytes: number
+  readonly maxTxBytes: number
+  readonly maxBlockBytes: number
   readonly maxGas: number
+  readonly timeIotaMs: number
 }
 
 export interface TxSizeParams {

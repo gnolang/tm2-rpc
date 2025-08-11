@@ -40,21 +40,6 @@ function encodeBlockchainRequestParams(param: requests.BlockchainRequestParams):
   };
 }
 
-interface RpcBlockSearchParams {
-  readonly query: string
-  readonly page?: string
-  readonly per_page?: string
-  readonly order_by?: string
-}
-function encodeBlockSearchParams(params: requests.BlockSearchParams): RpcBlockSearchParams {
-  return {
-    query: params.query,
-    page: may(smallIntToApi, params.page),
-    per_page: may(smallIntToApi, params.per_page),
-    order_by: params.order_by,
-  };
-}
-
 interface RpcAbciQueryParams {
   readonly path: string
   /** hex encoded */
@@ -94,23 +79,6 @@ function encodeTxParams(params: requests.TxParams): RpcTxParams {
   };
 }
 
-interface RpcTxSearchParams {
-  readonly query: string
-  readonly prove?: boolean
-  readonly page?: string
-  readonly per_page?: string
-  readonly order_by?: string
-}
-function encodeTxSearchParams(params: requests.TxSearchParams): RpcTxSearchParams {
-  return {
-    query: params.query,
-    prove: params.prove,
-    page: may(smallIntToApi, params.page),
-    per_page: may(smallIntToApi, params.per_page),
-    order_by: params.order_by,
-  };
-}
-
 interface RpcValidatorsParams {
   readonly height?: string
   readonly page?: string
@@ -145,16 +113,20 @@ export class Params {
     return createJsonRpcRequest(req.method, encodeHeightParam(req.params));
   }
 
-  public static encodeBlockSearch(req: requests.BlockSearchRequest): JsonRpcRequest {
-    return createJsonRpcRequest(req.method, encodeBlockSearchParams(req.params));
-  }
-
   public static encodeBroadcastTx(req: requests.BroadcastTxRequest): JsonRpcRequest {
     return createJsonRpcRequest(req.method, encodeBroadcastTxParams(req.params));
   }
 
   public static encodeCommit(req: requests.CommitRequest): JsonRpcRequest {
     return createJsonRpcRequest(req.method, encodeHeightParam(req.params));
+  }
+
+  public static encodeConsensusParams(req: requests.ConsensusParamsRequest): JsonRpcRequest {
+    return createJsonRpcRequest(req.method, encodeHeightParam(req.params));
+  }
+
+  public static encodeConsensusState(req: requests.ConsensusStateRequest): JsonRpcRequest {
+    return createJsonRpcRequest(req.method);
   }
 
   public static encodeGenesis(req: requests.GenesisRequest): JsonRpcRequest {
@@ -173,27 +145,8 @@ export class Params {
     return createJsonRpcRequest(req.method);
   }
 
-  public static encodeSubscribe(req: requests.SubscribeRequest): JsonRpcRequest {
-    const eventTag = {
-      key: "tm.event",
-      value: req.query.type,
-    };
-    const query = requests.buildQuery({
-      tags: [eventTag],
-      raw: req.query.raw,
-    });
-    return createJsonRpcRequest("subscribe", {
-      query: query,
-    });
-  }
-
   public static encodeTx(req: requests.TxRequest): JsonRpcRequest {
     return createJsonRpcRequest(req.method, encodeTxParams(req.params));
-  }
-
-  // TODO: encode params for query string???
-  public static encodeTxSearch(req: requests.TxSearchRequest): JsonRpcRequest {
-    return createJsonRpcRequest(req.method, encodeTxSearchParams(req.params));
   }
 
   public static encodeValidators(req: requests.ValidatorsRequest): JsonRpcRequest {

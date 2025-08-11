@@ -1,9 +1,6 @@
 import {
   JsonRpcRequest, JsonRpcSuccessResponse,
 } from "@cosmjs/json-rpc";
-import {
-  Stream,
-} from "xstream";
 
 import {
   createJsonRpcRequest,
@@ -11,9 +8,7 @@ import {
 import {
   HttpClient,
   HttpEndpoint,
-  instanceOfRpcStreamingClient,
   RpcClient,
-  SubscriptionEvent,
   WebsocketClient,
 } from "../rpcclients";
 import {
@@ -125,60 +120,6 @@ export class Tm2Client {
   }
 
   /**
-   * Search for events that are in a block.
-   *
-   * NOTE
-   * This method will error on any node that is running a Tendermint version lower than 0.34.9.
-   *
-   * @see https://docs.tendermint.com/master/rpc/#/Info/block_search
-   */
-  public async blockSearch(params: requests.BlockSearchParams): Promise<responses.BlockSearchResponse> {
-    const query: requests.BlockSearchRequest = {
-      params: params,
-      method: requests.Method.BlockSearch,
-    };
-    const resp = await this.doCall(query, Params.encodeBlockSearch, Responses.decodeBlockSearch);
-    return {
-      ...resp,
-      // make sure we sort by height, as tendermint may be sorting by string value of the height
-      blocks: [...resp.blocks].sort((a, b) => a.block.header.height - b.block.header.height),
-    };
-  }
-
-  // this should paginate through all blockSearch options to ensure it returns all results.
-  // starts with page 1 or whatever was provided (eg. to start on page 7)
-  //
-  // NOTE
-  // This method will error on any node that is running a Tendermint version lower than 0.34.9.
-  public async blockSearchAll(params: requests.BlockSearchParams): Promise<responses.BlockSearchResponse> {
-    let page = params.page || 1;
-    const blocks: responses.BlockResponse[] = [];
-    let done = false;
-
-    while (!done) {
-      const resp = await this.blockSearch({
-        ...params,
-        page: page,
-      });
-      blocks.push(...resp.blocks);
-      if (blocks.length < resp.totalCount) {
-        page++;
-      }
-      else {
-        done = true;
-      }
-    }
-    // make sure we sort by height, as tendermint may be sorting by string value of the height
-    // and the earlier items may be in a higher page than the later items
-    blocks.sort((a, b) => a.block.header.height - b.block.header.height);
-
-    return {
-      totalCount: blocks.length,
-      blocks: blocks,
-    };
-  }
-
-  /**
    * Queries block headers filtered by minHeight <= height <= maxHeight.
    *
    * @param minHeight The minimum height to be included in the result. Defaults to 0.
@@ -250,6 +191,23 @@ export class Tm2Client {
     return this.doCall(query, Params.encodeCommit, Responses.decodeCommit);
   }
 
+  public async consensusParams(height?: number): Promise<responses.ConsensusParamsResponse> {
+    const query: requests.ConsensusParamsRequest = {
+      method: requests.Method.ConsensusParams,
+      params: {
+        height: height,
+      },
+    };
+    return this.doCall(query, Params.encodeConsensusParams, Responses.decodeConsensusParams);
+  }
+
+  public async consensusState(): Promise<responses.ConsensusStateResponse> {
+    const query: requests.ConsensusStateRequest = {
+      method: requests.Method.ConsensusState,
+    };
+    return this.doCall(query, Params.encodeConsensusState, Responses.decodeConsensusState);
+  }
+
   public async genesis(): Promise<responses.GenesisResponse> {
     const query: requests.GenesisRequest = {
       method: requests.Method.Genesis,
@@ -278,37 +236,6 @@ export class Tm2Client {
     return this.doCall(query, Params.encodeStatus, Responses.decodeStatus);
   }
 
-  public subscribeNewBlock(): Stream<responses.Block> {
-    const request: requests.SubscribeRequest = {
-      method: requests.Method.Subscribe,
-      query: {
-        type: requests.SubscriptionEventType.NewBlock,
-      },
-    };
-    return this.subscribe(request, Responses.decodeNewBlockEvent);
-  }
-
-  public subscribeNewBlockHeader(): Stream<responses.Header> {
-    const request: requests.SubscribeRequest = {
-      method: requests.Method.Subscribe,
-      query: {
-        type: requests.SubscriptionEventType.NewBlockHeader,
-      },
-    };
-    return this.subscribe(request, Responses.decodeNewBlockHeaderEvent);
-  }
-
-  public subscribeTx(query?: string): Stream<responses.TxEvent> {
-    const request: requests.SubscribeRequest = {
-      method: requests.Method.Subscribe,
-      query: {
-        type: requests.SubscriptionEventType.Tx,
-        raw: query,
-      },
-    };
-    return this.subscribe(request, Responses.decodeTxEvent);
-  }
-
   /**
    * Get a single transaction by hash
    *
@@ -320,46 +247,6 @@ export class Tm2Client {
       method: requests.Method.Tx,
     };
     return this.doCall(query, Params.encodeTx, Responses.decodeTx);
-  }
-
-  /**
-   * Search for transactions that are in a block
-   *
-   * @see https://docs.tendermint.com/master/rpc/#/Info/tx_search
-   */
-  public async txSearch(params: requests.TxSearchParams): Promise<responses.TxSearchResponse> {
-    const query: requests.TxSearchRequest = {
-      params: params,
-      method: requests.Method.TxSearch,
-    };
-    return this.doCall(query, Params.encodeTxSearch, Responses.decodeTxSearch);
-  }
-
-  // this should paginate through all txSearch options to ensure it returns all results.
-  // starts with page 1 or whatever was provided (eg. to start on page 7)
-  public async txSearchAll(params: requests.TxSearchParams): Promise<responses.TxSearchResponse> {
-    let page = params.page || 1;
-    const txs: responses.TxResponse[] = [];
-    let done = false;
-
-    while (!done) {
-      const resp = await this.txSearch({
-        ...params,
-        page: page,
-      });
-      txs.push(...resp.txs);
-      if (txs.length < resp.totalCount) {
-        page++;
-      }
-      else {
-        done = true;
-      }
-    }
-
-    return {
-      totalCount: txs.length,
-      txs: txs,
-    };
   }
 
   public async validators(params: requests.ValidatorsParams): Promise<responses.ValidatorsResponse> {
@@ -410,17 +297,5 @@ export class Tm2Client {
     const req = encode(request);
     const result = await this.client.execute(req);
     return decode(result);
-  }
-
-  private subscribe<T>(request: requests.SubscribeRequest, decode: (e: SubscriptionEvent) => T): Stream<T> {
-    if (!instanceOfRpcStreamingClient(this.client)) {
-      throw new Error("This RPC client type cannot subscribe to events");
-    }
-
-    const req = Params.encodeSubscribe(request);
-    const eventStream = this.client.listen(req);
-    return eventStream.map<T>((event) => {
-      return decode(event);
-    });
   }
 }
