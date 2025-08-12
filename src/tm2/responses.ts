@@ -138,7 +138,7 @@ export interface ConsensusParamsResponse {
   readonly blockHeight: number
   readonly consensusParams: ConsensusParams
 }
-export interface RoundState {
+export interface SimpleRoundState {
   readonly height: number
   readonly round: number
   readonly step: number
@@ -148,8 +148,56 @@ export interface RoundState {
   readonly validBlockHash: Uint8Array
   readonly heightVoteSet: any
 }
-export interface ConsensusStateResponse {
+export interface ValidatorSet {
+  readonly validators: readonly Validator[]
+  readonly proposer: Validator | null
+} 
+export interface Proposal {
+  readonly type: number // 1 for PreVote, 2 for PreCommit
+  readonly height: number
+  readonly round: number
+  readonly step: number
+  readonly polRound: number
+  readonly blockId: BlockId
+  readonly timestamp: ReadonlyDateWithNanoseconds
+  readonly signature: Uint8Array | undefined
+}
+export interface PartSet {
+
+}
+export interface HeightVoteSet {
+}
+export interface VoteSet {}
+export interface RoundState {
+  readonly height: number
+  readonly round: number
+  readonly step: number
+  readonly startTime: ReadonlyDateWithNanoseconds
+  readonly commitTime: ReadonlyDateWithNanoseconds
+  readonly validators: ValidatorSet
+  readonly proposal: Proposal
+  readonly proposalBlock: Block | null
+  readonly proposalBlockParts: PartSet | null
+  readonly lockedRound: number
+  readonly lockedBlock: Block | null
+  readonly lockedBlockParts: PartSet | null
+  readonly validRound: number
+  readonly validBlock: Block | null
+  readonly validBlockParts: null
+  readonly votes: HeightVoteSet | null
+  readonly commitRound: number
+  readonly lastCommit: VoteSet | null
+  readonly lastValidators: ValidatorSet | null
+  readonly triggeredTimeoutPrecommit: boolean
+}
+export interface PeerRoundState {
+  readonly address: string
+  readonly server: string
+  readonly port: number
   readonly roundState: RoundState
+}
+export interface ConsensusStateResponse {
+  readonly roundState: SimpleRoundState
 }
 
 export interface GenesisResponse {
@@ -425,4 +473,81 @@ export interface BlockGossipParams {
 export interface EvidenceParams {
   readonly maxAgeNumBlocks: number
   readonly maxAgeDuration: number
+}
+export interface RemoteSignerConfig {
+  serverAddress: string
+  dialMaxRetries: number
+  dialRetryInterval: number
+  dialTimeout: number
+  requestTimeout: number
+  authorizedKeys: string[]
+  keepAlivePeriod: number
+}
+export interface PrivValidatorConfig {
+  home: string
+  signState: string
+  localSigner: string
+  remoteSigner: RemoteSignerConfig
+}
+export interface ConsensusConfig {
+  home: string
+  walFile: string
+  privValidator: PrivValidatorConfig
+}
+export interface DumpPeerRoundState {
+  address: string
+  server: string
+  port: number
+  roundState: PeerRoundState
+}
+export interface DumpConsensusStateResponse {
+  config: ConsensusConfig
+  roundState: RoundState
+  peers: DumpPeerRoundState[]
+}
+export interface FlowStatus {
+  active: boolean
+  start: ReadonlyDateWithNanoseconds
+  duration: number
+  idle: number
+  bytes: number
+  samples: number
+  instRate: number
+  curRate: number
+  avgRate: number
+  peakRate: number
+  bytesRem: number
+  timeRem: number
+  progress: number
+}
+export interface ChannelStatus {
+  id: number
+  sendQueueCapacity: number
+  sendQueueSize: number
+  priority: number
+  recentlySent: number
+}
+export interface ConnectionStatus {
+  duration: number
+  sendMonitor: FlowStatus
+  recvMonitor: FlowStatus
+  channels: ChannelStatus[]
+}
+export interface Peer {
+  nodeInfo: NodeInfo
+  isOutbound: boolean
+  connectionStatus: ConnectionStatus
+  remoteIp: string
+}
+export interface NetInfoResponse {
+  listening: boolean
+  listeners: string[]
+  nPeers: number
+  peers: Peer[]
+}
+export interface UnconfirmedTxsResponse {
+  nTxs: number
+  total: number
+  totalBytes: number
+  txs: Uint8Array[]
 }
