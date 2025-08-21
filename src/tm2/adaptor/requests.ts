@@ -129,11 +129,19 @@ export class Params {
     return createJsonRpcRequest(req.method);
   }
 
+  public static encodeDumpConsensusState(req: requests.DumpConsensusStateRequest): JsonRpcRequest {
+    return createJsonRpcRequest(req.method);
+  }
+
   public static encodeGenesis(req: requests.GenesisRequest): JsonRpcRequest {
     return createJsonRpcRequest(req.method);
   }
 
   public static encodeHealth(req: requests.HealthRequest): JsonRpcRequest {
+    return createJsonRpcRequest(req.method);
+  }
+
+  public static encodeNetInfo(req: requests.NetInfoRequest): JsonRpcRequest {
     return createJsonRpcRequest(req.method);
   }
 

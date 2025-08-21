@@ -1,3 +1,5 @@
+import util from "util";
+
 import {
   connectTm2,
 } from "./tendermintclient";
@@ -40,7 +42,42 @@ export {
 } from "./types";
 
 const init = async () => {
-  const client = await connectTm2("http://localhost:26657");
-  console.log(await client.blockResults(156));
+  const client = await connectTm2("http://localhost:26657/");
+  /*
+  console.log(util.inspect(await client.abciInfo(), {
+    depth: null,
+  }));
+  console.log(util.inspect(await client.block(123), {
+    depth: null,
+  }));
+  console.log(util.inspect(await client.blockResults(1234), {
+    depth: null,
+  }));
+  console.log(util.inspect(await client.blockchain(123, 124), {
+    depth: null,
+  }));
+  console.log(util.inspect(await client.commit(123), {
+    depth: null,
+  }));
+  console.log(util.inspect(await client.consensusParams(123), {
+    depth: null,
+  }));
+  console.log(util.inspect(await client.consensusState(), {
+    depth: null,
+  }));
+  console.log(util.inspect(await client.dumpConsensusState(), {
+    depth: null,
+  }));
+  console.log(util.inspect(await client.genesis(), {
+    depth: null,
+  }));
+  console.log(util.inspect(await client.health(), {
+    depth: null,
+  }));
+  */
+
+  console.log(util.inspect(await client.netInfo(), {
+    depth: null,
+  }));
 };
 init();

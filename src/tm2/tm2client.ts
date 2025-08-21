@@ -208,6 +208,13 @@ export class Tm2Client {
     return this.doCall(query, Params.encodeConsensusState, Responses.decodeConsensusState);
   }
 
+  public async dumpConsensusState(): Promise<responses.DumpConsensusStateResponse> {
+    const query: requests.DumpConsensusStateRequest = {
+      method: requests.Method.DumpConsensusState,
+    };
+    return this.doCall(query, Params.encodeDumpConsensusState, Responses.decodeDumpConsensusState);
+  }
+
   public async genesis(): Promise<responses.GenesisResponse> {
     const query: requests.GenesisRequest = {
       method: requests.Method.Genesis,
@@ -220,6 +227,13 @@ export class Tm2Client {
       method: requests.Method.Health,
     };
     return this.doCall(query, Params.encodeHealth, Responses.decodeHealth);
+  }
+
+  public async netInfo(): Promise<responses.NetInfoResponse> {
+    const query: requests.NetInfoRequest = {
+      method: requests.Method.NetInfo,
+    };
+    return this.doCall(query, Params.encodeNetInfo, Responses.decodeNetInfo);
   }
 
   public async numUnconfirmedTxs(): Promise<responses.NumUnconfirmedTxsResponse> {

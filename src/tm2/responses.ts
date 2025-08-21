@@ -1,4 +1,7 @@
 import {
+  read,
+} from "fs";
+import {
   ReadonlyDate,
 } from "readonly-date";
 
@@ -151,12 +154,11 @@ export interface SimpleRoundState {
 export interface ValidatorSet {
   readonly validators: readonly Validator[]
   readonly proposer: Validator | null
-} 
+}
 export interface Proposal {
   readonly type: number // 1 for PreVote, 2 for PreCommit
   readonly height: number
   readonly round: number
-  readonly step: number
   readonly polRound: number
   readonly blockId: BlockId
   readonly timestamp: ReadonlyDateWithNanoseconds
@@ -167,7 +169,8 @@ export interface PartSet {
 }
 export interface HeightVoteSet {
 }
-export interface VoteSet {}
+export interface VoteSet {
+}
 export interface RoundState {
   readonly height: number
   readonly round: number
@@ -175,7 +178,7 @@ export interface RoundState {
   readonly startTime: ReadonlyDateWithNanoseconds
   readonly commitTime: ReadonlyDateWithNanoseconds
   readonly validators: ValidatorSet
-  readonly proposal: Proposal
+  readonly proposal: Proposal | null
   readonly proposalBlock: Block | null
   readonly proposalBlockParts: PartSet | null
   readonly lockedRound: number
@@ -190,11 +193,36 @@ export interface RoundState {
   readonly lastValidators: ValidatorSet | null
   readonly triggeredTimeoutPrecommit: boolean
 }
+export interface BitArray {
+  readonly bits: number
+  readonly elems: readonly number[]
+}
+export interface PartSetHeader {
+  readonly total: number
+  readonly hash: Uint8Array
+}
 export interface PeerRoundState {
+  readonly height: number
+  readonly round: number
+  readonly step: number
+  readonly startTime: ReadonlyDateWithNanoseconds
+  readonly proposal: boolean
+  readonly proposalBlockParts: BitArray
+  readonly proposalBlockPartsHeader: PartSetHeader | null
+  readonly proposalPolRound: number
+  readonly proposalPol: BitArray
+  readonly prevotes: BitArray
+  readonly precommits: BitArray
+  readonly lastCommitRound: number
+  readonly lastCommit: BitArray
+  readonly catchupCommitRound: number
+  readonly catchupCommit: BitArray
+}
+export interface DumpPeerRoundState {
   readonly address: string
   readonly server: string
   readonly port: number
-  readonly roundState: RoundState
+  readonly roundState: PeerRoundState
 }
 export interface ConsensusStateResponse {
   readonly roundState: SimpleRoundState
@@ -436,6 +464,7 @@ export interface Validator {
   readonly address: Uint8Array
   readonly pubkey?: ValidatorPubkey
   readonly votingPower: bigint
+  readonly name?: string
   readonly proposerPriority?: number
 }
 
@@ -475,31 +504,26 @@ export interface EvidenceParams {
   readonly maxAgeDuration: number
 }
 export interface RemoteSignerConfig {
-  serverAddress: string
-  dialMaxRetries: number
-  dialRetryInterval: number
-  dialTimeout: number
-  requestTimeout: number
-  authorizedKeys: string[]
-  keepAlivePeriod: number
+  readonly serverAddress: string
+  readonly dialMaxRetries: number
+  readonly dialRetryInterval: number
+  readonly dialTimeout: number
+  readonly requestTimeout: number
+  readonly authorizedKeys: readonly string[]
+  readonly keepAlivePeriod: number
 }
 export interface PrivValidatorConfig {
   home: string
   signState: string
   localSigner: string
-  remoteSigner: RemoteSignerConfig
+  remoteSigner: RemoteSignerConfig | null
 }
 export interface ConsensusConfig {
   home: string
   walFile: string
   privValidator: PrivValidatorConfig
 }
-export interface DumpPeerRoundState {
-  address: string
-  server: string
-  port: number
-  roundState: PeerRoundState
-}
+
 export interface DumpConsensusStateResponse {
   config: ConsensusConfig
   roundState: RoundState

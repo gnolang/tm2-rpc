@@ -1,4 +1,6 @@
+/* eslint-disable max-lines */
 import {
+  fromAscii,
   fromBase64, fromBech32, fromHex,
 } from "@cosmjs/encoding";
 import {
@@ -216,7 +218,7 @@ interface RpcBlockParams {
   readonly MaxDataBytes: string
   readonly MaxBlockBytes: string
   readonly MaxGas: string
-  readonly TimeIotaMs: string
+  readonly TimeIotaMS: string
 }
 
 /**
@@ -231,7 +233,7 @@ function decodeBlockParams(data: RpcBlockParams): responses.BlockParams {
     maxDataBytes: apiToSmallInt(assertNotEmpty(data.MaxDataBytes)),
     maxTxBytes: apiToSmallInt(assertNotEmpty(data.MaxTxBytes)),
     maxGas: apiToSmallInt(assertNotEmpty(data.MaxGas)),
-    timeIotaMs: apiToSmallInt(assertNotEmpty(data.TimeIotaMs)),
+    timeIotaMs: apiToSmallInt(assertNotEmpty(data.TimeIotaMS)),
   };
 }
 
@@ -347,14 +349,15 @@ export interface RpcEvent {
   readonly pkg_path: string
   readonly attrs: readonly RpcEventAttribute[]
 }
+export interface RpcPartSetHeader {
+  readonly total: number
+  /** hex encoded */
+  readonly hash: string
+}
 interface RpcBlockId {
   /** hex encoded */
   readonly hash: string
-  readonly parts: {
-    readonly total: number
-    /** hex encoded */
-    readonly hash: string
-  }
+  readonly parts: RpcPartSetHeader
 }
 
 function decodeBlockId(data: RpcBlockId): responses.BlockId {
@@ -571,9 +574,10 @@ interface RpcValidatorGenesis {
 
 export function decodeValidatorGenesis(data: RpcValidatorGenesis): responses.Validator {
   return {
-    address: fromHex(assertNotEmpty(data.address)),
+    address: fromBech32(assertNotEmpty(data.address)).data,
     pubkey: decodePubkey(assertObject(data.pub_key)),
     votingPower: apiToBigInt(assertNotEmpty(data.power)),
+    name: assertNotEmpty(data.name),
   };
 }
 interface RpcConsensusParamsResponse {
@@ -603,7 +607,7 @@ function decodeGenesis(data: RpcGenesisResponse): responses.GenesisResponse {
     chainId: assertNotEmpty(data.chain_id),
     consensusParams: decodeConsensusParams(data.consensus_params),
     validators: data.validators ? assertArray(data.validators).map(decodeValidatorGenesis) : [],
-    appHash: fromHex(assertSet(data.app_hash)), // empty string in kvstore app
+    appHash: data.app_hash ? fromHex(assertSet(data.app_hash)) : new Uint8Array(), // empty string in kvstore app
     appState: data.app_state,
   };
 }
@@ -850,10 +854,6 @@ function decodeBlockResponse(data: RpcBlockResponse): responses.BlockResponse {
   };
 }
 
-interface RpcBlockSearchResponse {
-  readonly blocks: readonly RpcBlockResponse[]
-  readonly total_count: string
-}
 interface RpcNumUnconfirmedTxsResponse {
   readonly total: string
   readonly total_bytes: string
@@ -865,7 +865,207 @@ function decodeNumUnconfirmedTxs(data: RpcNumUnconfirmedTxsResponse): responses.
     totalBytes: apiToSmallInt(assertNotEmpty(data.total_bytes)),
   };
 }
+interface RpcSimpleRoundState {
+  "height/round/step": string
+  start_time: string
+  proposal_block_hash: string | null
+  locked_block_hash: string | null
+  valid_block_hash: string | null
+  height_vote_set: object
+}
+interface RpcConsensusStateResponse {
+  readonly round_state: RpcSimpleRoundState
+}
 
+function decodeConsensusStateResponse(data: RpcConsensusStateResponse): responses.ConsensusStateResponse {
+  return {
+    roundState: {
+      height: apiToSmallInt(assertNotEmpty(data.round_state["height/round/step"].split("/")[0])),
+      round: apiToSmallInt(assertNotEmpty(data.round_state["height/round/step"].split("/")[1])),
+      step: apiToSmallInt(assertNotEmpty(data.round_state["height/round/step"].split("/")[2])),
+      startTime: fromRfc3339WithNanoseconds(assertNotEmpty(data.round_state.start_time)),
+      proposalBlockHash: data.round_state.proposal_block_hash ? fromBase64(data.round_state.proposal_block_hash) : new Uint8Array(),
+      lockedBlockHash: data.round_state.locked_block_hash ? fromBase64(data.round_state.locked_block_hash) : new Uint8Array(),
+      validBlockHash: data.round_state.valid_block_hash ? fromBase64(data.round_state.valid_block_hash) : new Uint8Array(),
+      heightVoteSet: assertObject(data.round_state.height_vote_set),
+    },
+  };
+}
+
+export interface RpcRemoteSignerConfig {
+  readonly server_address: string
+  readonly dial_max_retries: string
+  readonly dial_retry_interval: string
+  readonly dial_timeout: string
+  readonly request_timeout: string
+  readonly tcp_authorized_keys: readonly string[]
+  readonly tcp_keep_alive_period: string
+}
+function decodeRemoteSignerConfig(data: RpcRemoteSignerConfig): responses.RemoteSignerConfig {
+  return {
+    serverAddress: data.server_address ?? "",
+    dialMaxRetries: apiToSmallInt(assertNotEmpty(data.dial_max_retries)),
+    dialRetryInterval: parseInt(assertNotEmpty(data.dial_retry_interval)),
+    dialTimeout: parseInt(assertNotEmpty(data.dial_timeout)),
+    requestTimeout: parseInt(assertNotEmpty(data.request_timeout)),
+    authorizedKeys: assertArray(data.tcp_authorized_keys),
+    keepAlivePeriod: parseInt(assertNotEmpty(data.tcp_keep_alive_period)),
+  };
+}
+export interface RpcPrivValidatorConfig {
+  readonly home: string
+  readonly sign_state: string
+  readonly local_signer: string
+  readonly remote_signer: RpcRemoteSignerConfig
+}
+function decodePrivValidatorConfig(data: RpcPrivValidatorConfig): responses.PrivValidatorConfig {
+  return {
+    home: assertNotEmpty(data.home),
+    signState: assertNotEmpty(data.sign_state),
+    localSigner: assertNotEmpty(data.local_signer),
+    remoteSigner: data.remote_signer ? decodeRemoteSignerConfig(assertNotEmpty(data.remote_signer)) : null,
+  };
+}
+export interface RpcConsensusConfig {
+  readonly home: string
+  readonly wal_file: string
+  readonly priv_validator: RpcPrivValidatorConfig
+}
+function decodeConsensusConfig(data: RpcConsensusConfig): responses.ConsensusConfig {
+  return {
+    home: assertNotEmpty(data.home),
+    walFile: assertNotEmpty(data.wal_file),
+    privValidator: decodePrivValidatorConfig(data.priv_validator),
+  };
+}
+export interface RpcValidatorSet {
+  readonly validators: readonly RpcValidatorInfo[]
+  readonly proposer: RpcValidatorInfo | null
+}
+export interface RpcPartSet {
+
+}
+export interface RpcHeightVoteSet {
+
+}
+export interface RpcVoteSet {
+}
+export interface RpcProposal {
+  readonly Type: string
+  readonly height: string
+  readonly round: string
+  readonly pol_round: string
+  readonly block_id: RpcBlockId
+  readonly timestamp: string
+  readonly signature: string | null
+}
+export interface RpcRoundState {
+  readonly height: number
+  readonly round: string
+  readonly step: string
+  readonly start_time: string
+  readonly commit_time: string
+  readonly validators: RpcValidatorSet
+  readonly proposal: RpcProposal | null
+  readonly proposal_block: RpcBlock | null
+  readonly proposal_block_parts: RpcPartSet | null
+  readonly locked_round: string
+  readonly locked_block: RpcBlock | null
+  readonly locked_block_parts: RpcPartSet | null
+  readonly valid_round: string
+  readonly valid_block: RpcBlock | null
+  readonly valid_block_parts: RpcPartSet | null
+  readonly votes: RpcHeightVoteSet | null
+  readonly commit_round: string
+  readonly last_commit: RpcVoteSet | null
+  readonly last_validators: RpcValidatorSet
+  readonly triggered_timeout_precommit: boolean
+}
+export interface RpcPeerRoundState {
+  node_address: string
+  peer_state: string
+}
+interface RpcDumpConsensusStateResponse {
+  readonly config: RpcConsensusConfig
+  readonly round_state: RpcRoundState
+  readonly peers: readonly RpcPeerRoundState[]
+}
+function decodeValidatorSet(data: RpcValidatorSet): responses.ValidatorSet {
+  return {
+    validators: data.validators.map(decodeValidatorInfo),
+    proposer: data.proposer ? decodeValidatorInfo(data.proposer) : null,
+  };
+}
+function decodeProposal(data: RpcProposal): responses.Proposal | null {
+  return {
+    type: apiToSmallInt(assertNotEmpty(data.Type)),
+    height: apiToSmallInt(assertNotEmpty(data.height)),
+    round: apiToSmallInt(assertNotEmpty(data.round)),
+    polRound: apiToSmallInt(assertNotEmpty(data.pol_round)),
+    blockId: decodeBlockId(assertObject(data.block_id)),
+    timestamp: fromRfc3339WithNanoseconds(assertNotEmpty(data.timestamp)),
+    signature: data.signature ? fromBase64(assertNotEmpty(data.signature)) : undefined,
+  };
+}
+function decodePartSet(_data: RpcPartSet): responses.PartSet {
+  return {
+  };
+}
+function decodeHeightVoteSet(_data: RpcHeightVoteSet): responses.HeightVoteSet {
+  return {
+  };
+}
+function decodeVoteSet(_data: RpcVoteSet): responses.VoteSet {
+  return {
+  };
+}
+function decodeRoundState(data: RpcRoundState): responses.RoundState {
+  return {
+    height: apiToSmallInt(assertNotEmpty(data.height)),
+    round: apiToSmallInt(assertNotEmpty(data.round)),
+    step: apiToSmallInt(assertNotEmpty(data.step)),
+    startTime: fromRfc3339WithNanoseconds(assertNotEmpty(data.start_time)),
+    commitTime: fromRfc3339WithNanoseconds(data.commit_time),
+    validators: decodeValidatorSet(assertObject(data.validators)),
+    proposal: data.proposal ? decodeProposal(assertObject(data.proposal)) : null,
+    proposalBlock: data.proposal_block ? decodeBlock(assertObject(data.proposal_block)) : null,
+    proposalBlockParts: data.proposal_block_parts ? decodePartSet(assertObject(data.proposal_block_parts)) : null,
+    lockedRound: apiToSmallInt(assertNotEmpty(data.locked_round)),
+    lockedBlock: data.locked_block ? decodeBlock(assertObject(data.locked_block)) : null,
+    lockedBlockParts: data.locked_block_parts ? decodePartSet(assertObject(data.locked_block_parts)) : null,
+    validRound: apiToSmallInt(assertNotEmpty(data.valid_round)),
+    validBlock: data.valid_block ? decodeBlock(assertObject(data.valid_block)) : null,
+    validBlockParts: null,
+    votes: data.votes ? decodeHeightVoteSet(assertObject(data.votes)) : null,
+    commitRound: apiToSmallInt(assertNotEmpty(data.commit_round)),
+    lastCommit: data.last_commit ? decodeVoteSet(assertObject(data.last_commit)) : null,
+    lastValidators: decodeValidatorSet(assertObject(data.last_validators)),
+    triggeredTimeoutPrecommit: assertNotEmpty(data.triggered_timeout_precommit),
+  };
+}
+function decodePeerRoundState(data: RpcPeerRoundState): responses.DumpPeerRoundState {
+  const parts = data.node_address.split("@");
+  const ip = parts[1].split(":");
+  return {
+    address: parts[0],
+    server: ip[0],
+    port: apiToSmallInt(ip[1]),
+    roundState: JSON.parse(fromAscii(fromBase64(assertNotEmpty(data.peer_state)))).round_state,
+  };
+}
+function decodeDumpConsensusStateResponse(data: RpcDumpConsensusStateResponse): responses.DumpConsensusStateResponse {
+  return {
+    config: decodeConsensusConfig(assertObject(data.config)),
+    roundState: decodeRoundState(assertObject(data.round_state)),
+    peers: data.peers && assertArray(data.peers) ? data.peers.map(decodePeerRoundState) : [],
+  };
+}
+function decodeNetInfoResponse(data: RpcNetInfoResponse): responses.NetInfoResponse {
+  return {
+    peers: data.peers ? data.peers.map(decodePeerInfo) : [],
+    listener: data.listener ? fromAscii(assertNotEmpty(data.listener)) : undefined,
+  };
+} 
 export class Responses {
   public static decodeAbciInfo(response: JsonRpcSuccessResponse): responses.AbciInfoResponse {
     return decodeAbciInfo(assertObject((response.result as AbciInfoResult).response));
@@ -901,6 +1101,14 @@ export class Responses {
     return decodeBroadcastTxCommit(response.result as RpcBroadcastTxCommitResponse);
   }
 
+  public static decodeConsensusState(response: JsonRpcSuccessResponse): responses.ConsensusStateResponse {
+    return decodeConsensusStateResponse(response.result as RpcConsensusStateResponse);
+  }
+
+  public static decodeDumpConsensusState(response: JsonRpcSuccessResponse): responses.DumpConsensusStateResponse {
+    return decodeDumpConsensusStateResponse(response.result as RpcDumpConsensusStateResponse);
+  }
+
   public static decodeConsensusParams(response: JsonRpcSuccessResponse): responses.ConsensusParamsResponse {
     return decodeConsensusParamsResponse(response.result as RpcConsensusParamsResponse);
   }
@@ -915,6 +1123,10 @@ export class Responses {
 
   public static decodeHealth(): responses.HealthResponse {
     return null;
+  }
+
+  public static decodeNetInfo(response: JsonRpcSuccessResponse): responses.NetInfoResponse {
+    return decodeNetInfo(response.result as RpcNetInfoResponse);
   }
 
   public static decodeNumUnconfirmedTxs(
