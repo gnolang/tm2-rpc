@@ -20,4 +20,4 @@ jobs:
     - name: Build the project
       run: pnpm build
     - name: Build chains and run tests
-      run: cd ${{ github.workspace }} && pnpm test:e2e
+      run: cd ${{ github.workspace }} && pnpm test
