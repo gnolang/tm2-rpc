@@ -45,7 +45,7 @@ export {
 } from "./types";
 
 const init = async () => {
-  const client = await connectTm2("https://rpc.test7.testnets.gno.land/");
+  const client = await connectTm2("https://rpc.test8.testnets.gno.land/");
 
   console.log(util.inspect(await client.abciInfo(), {
     depth: null,
@@ -71,11 +71,11 @@ const init = async () => {
   console.log(util.inspect(await client.dumpConsensusState(), {
     depth: null,
   }));
-  /*
-  console.log(util.inspect(await client.genesis(), {
-    depth: null,
-  }));
-  */
+  /**
+   *  console.log(util.inspect(await client.genesis(), {
+   *    depth: null,
+   *   }));
+   **/
   console.log(util.inspect(await client.health(), {
     depth: null,
   }));
@@ -85,8 +85,16 @@ const init = async () => {
   console.log(util.inspect(await client.numUnconfirmedTxs(), {
     depth: null,
   }));
+  console.log(util.inspect(await client.status(), {
+    depth: null,
+  }));
+  console.log(util.inspect(await client.status({
+    heightGte: 123,
+  }), {
+    depth: null,
+  }));
   console.log(util.inspect(await client.tx({
-    hash: fromBase64("yF50kO5a1lToWo4JyBQ4UO1eHiLyEW5ONqYTYNzTXSk="),
+    hash: fromBase64("vKO6319Uw72z2YO0ZHU90frSsQKZea4v/+DNC0j0KJM="),
   }), {
     depth: null,
   }));
