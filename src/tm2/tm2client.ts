@@ -236,11 +236,11 @@ export class Tm2Client {
     return this.doCall(query, Params.encodeNetInfo, Responses.decodeNetInfo);
   }
 
-  public async numUnconfirmedTxs(): Promise<responses.NumUnconfirmedTxsResponse> {
+  public async numUnconfirmedTxs(): Promise<responses.UnconfirmedTxsResponse> {
     const query: requests.NumUnconfirmedTxsRequest = {
       method: requests.Method.NumUnconfirmedTxs,
     };
-    return this.doCall(query, Params.encodeNumUnconfirmedTxs, Responses.decodeNumUnconfirmedTxs);
+    return this.doCall(query, Params.encodeNumUnconfirmedTxs, Responses.decodeUnconfirmedTxs);
   }
 
   public async status(): Promise<responses.StatusResponse> {
@@ -263,43 +263,22 @@ export class Tm2Client {
     return this.doCall(query, Params.encodeTx, Responses.decodeTx);
   }
 
+  public async unconfirmedTxs(limit: number): Promise<responses.UnconfirmedTxsResponse> {
+    const query: requests.UnconfirmedTxsRequest = {
+      method: requests.Method.UnconfirmedTxs,
+      params: {
+        limit,
+      },
+    };
+    return this.doCall(query, Params.encodeUnconfirmedTxs, Responses.decodeUnconfirmedTxs);
+  }
+
   public async validators(params: requests.ValidatorsParams): Promise<responses.ValidatorsResponse> {
     const query: requests.ValidatorsRequest = {
       method: requests.Method.Validators,
       params: params,
     };
     return this.doCall(query, Params.encodeValidators, Responses.decodeValidators);
-  }
-
-  public async validatorsAll(height?: number): Promise<responses.ValidatorsResponse> {
-    const validators: responses.Validator[] = [];
-    let page = 1;
-    let done = false;
-    let blockHeight = height;
-
-    while (!done) {
-      const response = await this.validators({
-        per_page: 50,
-        height: blockHeight,
-        page: page,
-      });
-      validators.push(...response.validators);
-      blockHeight = blockHeight || response.blockHeight;
-      if (validators.length < response.total) {
-        page++;
-      }
-      else {
-        done = true;
-      }
-    }
-
-    return {
-      // NOTE: Default value is for type safety but this should always be set
-      blockHeight: blockHeight ?? 0,
-      count: validators.length,
-      total: validators.length,
-      validators: validators,
-    };
   }
 
   // doCall is a helper to handle the encode/call/decode logic

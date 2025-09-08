@@ -19,27 +19,6 @@ import * as requests from "../requests";
 interface HeightParam {
   readonly height?: number
 }
-interface RpcHeightParam {
-  readonly height?: string
-}
-function encodeHeightParam(param: HeightParam): RpcHeightParam {
-  return {
-    height: may(smallIntToApi, param.height),
-  };
-}
-
-interface RpcBlockchainRequestParams {
-  readonly minHeight?: string
-  readonly maxHeight?: string
-}
-
-function encodeBlockchainRequestParams(param: requests.BlockchainRequestParams): RpcBlockchainRequestParams {
-  return {
-    minHeight: may(smallIntToApi, param.minHeight),
-    maxHeight: may(smallIntToApi, param.maxHeight),
-  };
-}
-
 interface RpcAbciQueryParams {
   readonly path: string
   /** hex encoded */
@@ -47,7 +26,36 @@ interface RpcAbciQueryParams {
   readonly height?: string
   readonly prove?: boolean
 }
+interface RpcBlockchainRequestParams {
+  readonly minHeight?: string
+  readonly maxHeight?: string
+}
+interface RpcBroadcastTxParams {
+  /** base64 encoded */
+  readonly tx: string
+}
+interface RpcHeightParam {
+  readonly height?: string
+}
+interface RpcTxParams {
+  /** base64 encoded */
+  readonly hash: string
+  readonly prove?: boolean
+}
+interface RpcUnconfirmedTxsParams {
+  readonly limit?: string
+}
+interface RpcValidatorsParams {
+  readonly height?: string
+  readonly page?: string
+  readonly per_page?: string
+}
 
+function encodeHeightParam(param: HeightParam): RpcHeightParam {
+  return {
+    height: may(smallIntToApi, param.height),
+  };
+}
 function encodeAbciQueryParams(params: requests.AbciQueryParams): RpcAbciQueryParams {
   return {
     path: assertNotEmpty(params.path),
@@ -56,39 +64,30 @@ function encodeAbciQueryParams(params: requests.AbciQueryParams): RpcAbciQueryPa
     prove: params.prove,
   };
 }
-
-interface RpcBroadcastTxParams {
-  /** base64 encoded */
-  readonly tx: string
+function encodeBlockchainRequestParams(param: requests.BlockchainRequestParams): RpcBlockchainRequestParams {
+  return {
+    minHeight: may(smallIntToApi, param.minHeight),
+    maxHeight: may(smallIntToApi, param.maxHeight),
+  };
 }
 function encodeBroadcastTxParams(params: requests.BroadcastTxParams): RpcBroadcastTxParams {
   return {
     tx: toBase64(assertNotEmpty(params.tx)),
   };
 }
-
-interface RpcTxParams {
-  /** base64 encoded */
-  readonly hash: string
-  readonly prove?: boolean
-}
 function encodeTxParams(params: requests.TxParams): RpcTxParams {
   return {
     hash: toBase64(assertNotEmpty(params.hash)),
-    prove: params.prove,
   };
 }
-
-interface RpcValidatorsParams {
-  readonly height?: string
-  readonly page?: string
-  readonly per_page?: string
+function encodeUnconfirmedTxsParams(params: requests.UnconfirmedTxsParams): RpcUnconfirmedTxsParams {
+  return {
+    limit: may(smallIntToApi, params.limit),
+  };
 }
 function encodeValidatorsParams(params: requests.ValidatorsParams): RpcValidatorsParams {
   return {
     height: may(smallIntToApi, params.height),
-    page: may(smallIntToApi, params.page),
-    per_page: may(smallIntToApi, params.per_page),
   };
 }
 
@@ -155,6 +154,10 @@ export class Params {
 
   public static encodeTx(req: requests.TxRequest): JsonRpcRequest {
     return createJsonRpcRequest(req.method, encodeTxParams(req.params));
+  }
+
+  public static encodeUnconfirmedTxs(req: requests.UnconfirmedTxsRequest): JsonRpcRequest {
+    return createJsonRpcRequest(req.method, encodeUnconfirmedTxsParams(req.params));
   }
 
   public static encodeValidators(req: requests.ValidatorsRequest): JsonRpcRequest {

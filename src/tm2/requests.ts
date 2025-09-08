@@ -145,7 +145,9 @@ export interface NetInfoRequest {
 export interface NumUnconfirmedTxsRequest {
   readonly method: Method.NumUnconfirmedTxs
 }
-
+export interface UnconfirmedTxsParams {
+  readonly limit?: number
+}
 export interface StatusRequest {
   readonly method: Method.Status
 }
@@ -161,7 +163,6 @@ export interface TxRequest {
 
 export interface TxParams {
   readonly hash: Uint8Array
-  readonly prove?: boolean
 }
 export interface UnconfirmedTxsRequest {
   readonly method: Method.UnconfirmedTxs
@@ -197,8 +198,6 @@ export interface ValidatorsRequest {
 
 export interface ValidatorsParams {
   readonly height?: number
-  readonly page?: number
-  readonly per_page?: number
 }
 
 export interface BuildQueryComponents {

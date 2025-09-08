@@ -1,7 +1,4 @@
 import {
-  read,
-} from "fs";
-import {
   ReadonlyDate,
 } from "readonly-date";
 
@@ -9,6 +6,7 @@ import {
   ReadonlyDateWithNanoseconds,
 } from "../dates";
 import {
+  Duration,
   ValidatorPubkey,
 } from "../types";
 
@@ -28,7 +26,6 @@ export type Response
     | GenesisResponse
     | HealthResponse
     | NetInfoResponse
-    | NumUnconfirmedTxsResponse
     | StatusResponse
     | TxResponse
     | UnconfirmedTxsResponse
@@ -112,7 +109,7 @@ export interface BroadcastTxSyncResponse extends TxData {
  */
 export function broadcastTxSyncSuccess(res: BroadcastTxSyncResponse): boolean {
   // code must be 0 on success
-  return res.code === 0;
+  return res.responseBase.error === null;
 }
 
 export interface BroadcastTxCommitResponse {
@@ -129,7 +126,7 @@ export interface BroadcastTxCommitResponse {
 export function broadcastTxCommitSuccess(response: BroadcastTxCommitResponse): boolean {
   // code must be 0 on success
   // deliverTx may be present but empty on failure
-  return response.checkTx.code === 0 && !!response.deliverTx && response.deliverTx.code === 0;
+  return response.checkTx.responseBase.error === null && !!response.deliverTx && response.deliverTx.responseBase.error === null;
 }
 
 export interface CommitResponse {
@@ -239,9 +236,11 @@ export interface GenesisResponse {
 
 export type HealthResponse = null;
 
-export interface NumUnconfirmedTxsResponse {
-  readonly total: number
-  readonly totalBytes: number
+export interface UnconfirmedTxsResponse {
+  readonly nTxs: bigint
+  readonly total: bigint
+  readonly totalBytes: bigint
+  readonly txs: readonly Uint8Array[]
 }
 
 export interface StatusResponse {
@@ -261,7 +260,6 @@ export interface TxResponse {
   readonly height: number
   readonly index: number
   readonly result: TxData
-  readonly proof?: TxProof
 }
 
 export interface TxSearchResponse {
@@ -272,8 +270,6 @@ export interface TxSearchResponse {
 export interface ValidatorsResponse {
   readonly blockHeight: number
   readonly validators: readonly Validator[]
-  readonly count: number
-  readonly total: number
 }
 
 export interface ResponseBase {
@@ -313,11 +309,7 @@ export interface Event {
 }
 
 export interface TxData {
-  readonly code: number
-  readonly codespace?: string
-  readonly log?: string
-  readonly data?: Uint8Array
-  readonly events: readonly Event[]
+  readonly responseBase: ResponseBase
   readonly gasWanted: bigint
   readonly gasUsed: bigint
 }
@@ -442,7 +434,7 @@ export interface NodeInfo {
   readonly network: string
   readonly version: string
   readonly software: string
-  readonly channels: string // ???
+  readonly channels: number[] // ???
   readonly moniker: string
   readonly other: Map<string, string>
   readonly versionSet: VersionInfo[]
@@ -465,7 +457,7 @@ export interface Validator {
   readonly pubkey?: ValidatorPubkey
   readonly votingPower: bigint
   readonly name?: string
-  readonly proposerPriority?: number
+  readonly proposerPriority?: bigint
 }
 
 export interface ValidatorUpdate {
@@ -532,16 +524,16 @@ export interface DumpConsensusStateResponse {
 export interface FlowStatus {
   active: boolean
   start: ReadonlyDateWithNanoseconds
-  duration: number
-  idle: number
-  bytes: number
-  samples: number
-  instRate: number
-  curRate: number
-  avgRate: number
-  peakRate: number
-  bytesRem: number
-  timeRem: number
+  duration: Duration
+  idle: Duration
+  bytes: bigint
+  samples: bigint
+  instRate: bigint
+  curRate: bigint
+  avgRate: bigint
+  peakRate: bigint
+  bytesRem: bigint
+  timeRem: Duration
   progress: number
 }
 export interface ChannelStatus {
@@ -549,10 +541,10 @@ export interface ChannelStatus {
   sendQueueCapacity: number
   sendQueueSize: number
   priority: number
-  recentlySent: number
+  recentlySent: bigint
 }
 export interface ConnectionStatus {
-  duration: number
+  duration: Duration
   sendMonitor: FlowStatus
   recvMonitor: FlowStatus
   channels: ChannelStatus[]
@@ -568,10 +560,4 @@ export interface NetInfoResponse {
   listeners: string[]
   nPeers: number
   peers: Peer[]
-}
-export interface UnconfirmedTxsResponse {
-  nTxs: number
-  total: number
-  totalBytes: number
-  txs: Uint8Array[]
 }

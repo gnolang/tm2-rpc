@@ -15,6 +15,7 @@ import {
 } from "../../dates";
 import {
   apiToBigInt, apiToSmallInt,
+  durationFromString,
 } from "../../inthelpers";
 import {
   SubscriptionEvent,
@@ -461,25 +462,16 @@ interface RpcBroadcastTxSyncResponse extends RpcTxData {
 }
 
 interface RpcTxData {
-  readonly codespace?: string
-  readonly code?: number
-  readonly log?: string
-  /** base64 encoded */
-  readonly data?: string
-  readonly events?: readonly RpcEvent[]
-  readonly gas_wanted?: string
-  readonly gas_used?: string
+  readonly ResponseBase: RpcResponseBase
+  readonly GasWanted?: string
+  readonly GasUsed?: string
 }
 
 function decodeTxData(data: RpcTxData): responses.TxData {
   return {
-    code: apiToSmallInt(assertNumber(data.code ?? 0)),
-    codespace: data.codespace,
-    log: data.log,
-    data: may(fromBase64, data.data),
-    events: data.events ? decodeEvents(data.events) : [],
-    gasWanted: apiToBigInt(data.gas_wanted ?? "0"),
-    gasUsed: apiToBigInt(data.gas_used ?? "0"),
+    responseBase: decodeResponseBase(data.ResponseBase),
+    gasWanted: apiToBigInt(data.GasWanted ?? "0"),
+    gasUsed: apiToBigInt(data.GasUsed ?? "0"),
   };
 }
 function decodeBroadcastTxSync(data: RpcBroadcastTxSyncResponse): responses.BroadcastTxSyncResponse {
@@ -625,6 +617,7 @@ export function decodeValidatorInfo(data: RpcValidatorInfo): responses.Validator
   return {
     pubkey: decodePubkey(assertObject(data.pub_key)),
     votingPower: apiToBigInt(assertNotEmpty(data.voting_power)),
+    proposerPriority: data.proposer_priority ? apiToBigInt(assertNotEmpty(data.proposer_priority)) : undefined,
     address: fromBech32(assertNotEmpty(data.address)).data,
   };
 }
@@ -658,7 +651,7 @@ function decodeNodeInfo(data: RpcNodeInfo): responses.NodeInfo {
     network: assertNotEmpty(data.network),
     software: assertString(data.software), // can be empty
     version: assertString(data.version), // Can be empty (https://github.com/cosmos/cosmos-sdk/issues/7963)
-    channels: assertString(data.channels), // can be empty
+    channels: Array.from(fromBase64(assertString(data.channels))), // can be empty
     moniker: assertString(data.moniker),
     other: dictionaryToStringMap(data.other),
     versionSet: data.version_set.map(versionInfo => ({
@@ -752,7 +745,6 @@ interface RpcTxResponse {
   readonly index: number
   /** hex encoded */
   readonly hash: string
-  readonly proof?: RpcTxProof
 }
 
 function decodeTxResponse(data: RpcTxResponse): responses.TxResponse {
@@ -761,8 +753,7 @@ function decodeTxResponse(data: RpcTxResponse): responses.TxResponse {
     result: decodeTxData(assertObject(data.tx_result)),
     height: apiToSmallInt(assertNotEmpty(data.height)),
     index: apiToSmallInt(assertNumber(data.index)),
-    hash: fromHex(assertNotEmpty(data.hash)),
-    proof: may(decodeTxProof, data.proof),
+    hash: fromBase64(assertNotEmpty(data.hash)),
   };
 }
 
@@ -798,16 +789,12 @@ function decodeTxEvent(data: RpcTxEvent): responses.TxEvent {
 interface RpcValidatorsResponse {
   readonly block_height: string
   readonly validators: readonly RpcValidatorInfo[]
-  readonly count: string
-  readonly total: string
 }
 
 function decodeValidators(data: RpcValidatorsResponse): responses.ValidatorsResponse {
   return {
     blockHeight: apiToSmallInt(assertNotEmpty(data.block_height)),
     validators: assertArray(data.validators).map(decodeValidatorInfo),
-    count: apiToSmallInt(assertNotEmpty(data.count)),
-    total: apiToSmallInt(assertNotEmpty(data.total)),
   };
 }
 
@@ -854,15 +841,19 @@ function decodeBlockResponse(data: RpcBlockResponse): responses.BlockResponse {
   };
 }
 
-interface RpcNumUnconfirmedTxsResponse {
+interface RpcUnconfirmedTxsResponse {
+  readonly n_txs: string
   readonly total: string
   readonly total_bytes: string
+  readonly txs: readonly string[] | null
 }
 
-function decodeNumUnconfirmedTxs(data: RpcNumUnconfirmedTxsResponse): responses.NumUnconfirmedTxsResponse {
+function decodeUnconfirmedTxs(data: RpcUnconfirmedTxsResponse): responses.UnconfirmedTxsResponse {
   return {
-    total: apiToSmallInt(assertNotEmpty(data.total)),
-    totalBytes: apiToSmallInt(assertNotEmpty(data.total_bytes)),
+    nTxs: apiToBigInt(assertNotEmpty(data.n_txs)),
+    total: apiToBigInt(assertNotEmpty(data.total)),
+    totalBytes: apiToBigInt(assertNotEmpty(data.total_bytes)),
+    txs: data.txs ? assertArray(data.txs).map(fromBase64) : [],
   };
 }
 interface RpcSimpleRoundState {
@@ -1060,12 +1051,96 @@ function decodeDumpConsensusStateResponse(data: RpcDumpConsensusStateResponse): 
     peers: data.peers && assertArray(data.peers) ? data.peers.map(decodePeerRoundState) : [],
   };
 }
+export interface RpcNetInfoResponse {
+  readonly listening: boolean
+  readonly n_peers: string
+  readonly peers: readonly RpcPeerInfo[]
+  readonly listeners?: string[]
+}
+export interface RpcPeerInfo {
+  readonly node_info: RpcNodeInfo
+  readonly is_outbound: boolean
+  readonly connection_status: RpcConnectionStatus
+  readonly remote_ip: string
+}
+export interface RpcConnectionStatus {
+  readonly Duration: string
+  readonly RecvMonitor: RpcMonitorInfo
+  readonly SendMonitor: RpcMonitorInfo
+  readonly Channels: readonly RpcChannelInfo[]
+}
+export interface RpcMonitorInfo {
+  readonly Active: boolean
+  readonly Start: string
+  readonly Duration: string
+  readonly Idle: string
+  readonly Bytes: string
+  readonly Samples: string
+  readonly InstRate: string
+  readonly CurRate: string
+  readonly AvgRate: string
+  readonly PeakRate: string
+  readonly BytesRem: string
+  readonly TimeRem: string
+  readonly Progress: number
+}
+export interface RpcChannelInfo {
+  readonly ID: number
+  readonly SendQueueCapacity: string
+  readonly SendQueueSize: string
+  readonly Priority: string
+  readonly RecentlySent: string
+}
+function decodePeerInfo(data: RpcPeerInfo): responses.Peer {
+  return {
+    nodeInfo: decodeNodeInfo(assertObject(data.node_info)),
+    isOutbound: data.is_outbound,
+    connectionStatus: decodeConnectionStatus(assertObject(data.connection_status)),
+    remoteIp: data.remote_ip,
+  };
+}
+function decodeConnectionStatus(data: RpcConnectionStatus): responses.ConnectionStatus {
+  return {
+    duration: durationFromString(data.Duration),
+    recvMonitor: decodeMonitorInfo(assertObject(data.RecvMonitor)),
+    sendMonitor: decodeMonitorInfo(assertObject(data.SendMonitor)),
+    channels: data.Channels ? data.Channels.map(decodeChannelInfo) : [],
+  };
+}
+function decodeChannelInfo(data: RpcChannelInfo): responses.ChannelStatus {
+  return {
+    id: data.ID,
+    sendQueueCapacity: apiToSmallInt(data.SendQueueCapacity),
+    sendQueueSize: apiToSmallInt(data.SendQueueSize),
+    priority: apiToSmallInt(data.Priority),
+    recentlySent: apiToBigInt(data.RecentlySent),
+  };
+}
+function decodeMonitorInfo(data: RpcMonitorInfo): responses.FlowStatus {
+  return {
+    active: data.Active,
+    start: fromRfc3339WithNanoseconds(data.Start),
+    duration: durationFromString(data.Duration),
+    idle: durationFromString(data.Idle),
+    bytes: apiToBigInt(data.Bytes),
+    samples: apiToBigInt(data.Samples),
+    instRate: apiToBigInt(data.InstRate),
+    curRate: apiToBigInt(data.CurRate),
+    avgRate: apiToBigInt(data.AvgRate),
+    peakRate: apiToBigInt(data.PeakRate),
+    bytesRem: apiToBigInt(data.BytesRem),
+    timeRem: durationFromString(data.TimeRem),
+    progress: apiToSmallInt(data.Progress) / 100000,
+  };
+}
 function decodeNetInfoResponse(data: RpcNetInfoResponse): responses.NetInfoResponse {
   return {
+    listening: data.listening,
+    nPeers: apiToSmallInt(data.n_peers),
     peers: data.peers ? data.peers.map(decodePeerInfo) : [],
-    listener: data.listener ? fromAscii(assertNotEmpty(data.listener)) : undefined,
+    listeners: data.listeners ? data.listeners.map(assertNotEmpty) : [],
   };
-} 
+}
 export class Responses {
   public static decodeAbciInfo(response: JsonRpcSuccessResponse): responses.AbciInfoResponse {
     return decodeAbciInfo(assertObject((response.result as AbciInfoResult).response));
@@ -1126,13 +1201,13 @@ export class Responses {
   }
 
   public static decodeNetInfo(response: JsonRpcSuccessResponse): responses.NetInfoResponse {
-    return decodeNetInfo(response.result as RpcNetInfoResponse);
+    return decodeNetInfoResponse(response.result as RpcNetInfoResponse);
   }
 
-  public static decodeNumUnconfirmedTxs(
+  public static decodeUnconfirmedTxs(
     response: JsonRpcSuccessResponse,
-  ): responses.NumUnconfirmedTxsResponse {
-    return decodeNumUnconfirmedTxs(response.result as RpcNumUnconfirmedTxsResponse);
+  ): responses.UnconfirmedTxsResponse {
+    return decodeUnconfirmedTxs(response.result as RpcUnconfirmedTxsResponse);
   }
 
   public static decodeStatus(response: JsonRpcSuccessResponse): responses.StatusResponse {

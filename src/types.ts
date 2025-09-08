@@ -35,3 +35,7 @@ export interface CommitSignature {
   timestamp: ReadonlyDateWithNanoseconds | undefined
   signature: Uint8Array | undefined
 }
+export interface Duration {
+  seconds: bigint
+  nanos: number
+}
