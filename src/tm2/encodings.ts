@@ -206,7 +206,7 @@ export function dictionaryToStringMap(obj: Record<string, unknown>): Map<string,
  * @returns Amino-encoded block ID as bytes
  */
 export function encodeBlockId(blockId: BlockId): Uint8Array {
-  return Uint8Array.from([0x0a, blockId.hash.length, ...blockId.hash, 0x12, blockId.parts.hash.length + 4, 0x08, blockId.parts.total, 0x12, blockId.parts.hash.length, ...blockId.parts.hash]);
+  return Uint8Array.from([0x0a, blockId.hash.length, ...blockId.hash, 0x12, blockId.parts.hash.length + 4, 0x08, Number(blockId.parts.total), 0x12, blockId.parts.hash.length, ...blockId.parts.hash]);
 }
 
 /**
