@@ -48,10 +48,21 @@ export interface AbciQueryResponse {
   readonly height?: number
 }
 
+/**
+ * ABCI BeginBlock response data.
+ *
+ * Contains the response from the application's BeginBlock method,
+ * including any events and gas information.
+ */
 export interface BeginBlock {
   readonly responseBase: ResponseBase
 }
 
+/**
+ * Represents a bit array used in consensus voting.
+ *
+ * Used to track which validators have voted in a particular round.
+ */
 export interface BitArray {
   readonly bits: bigint
   readonly elems: readonly bigint[]
@@ -77,20 +88,36 @@ export interface Block {
   readonly evidence: readonly Evidence[]
 }
 
+/**
+ * Parameters controlling block gossip behavior.
+ */
 export interface BlockGossipParams {
   readonly blockPartSizeBytes: number
 }
 
+/**
+ * Unique identifier for a block.
+ *
+ * Contains the block hash and information about the block's part set.
+ */
 export interface BlockId {
   readonly hash: Uint8Array
   readonly parts: PartSetHeader
 }
 
+/**
+ * Metadata about a block without the full transaction data.
+ *
+ * Contains the block ID and header information for efficient block queries.
+ */
 export interface BlockMeta {
   readonly blockId: BlockId
   readonly header: Header
 }
 
+/**
+ * Consensus parameters related to block size and gas limits.
+ */
 export interface BlockParams {
   readonly maxDataBytes: number
   readonly maxTxBytes: number
@@ -112,6 +139,11 @@ export interface BlockResponse {
   readonly block: Block
 }
 
+/**
+ * Response containing the results of executing all transactions in a block.
+ *
+ * Includes transaction execution results, validator updates, and consensus events.
+ */
 export interface BlockResultsResponse {
   readonly height: number
   readonly results: {
@@ -121,6 +153,11 @@ export interface BlockResultsResponse {
   }
 }
 
+/**
+ * Response containing a range of block metadata.
+ *
+ * Used for blockchain queries that return multiple block headers.
+ */
 export interface BlockchainResponse {
   readonly lastHeight: number
   readonly blockMetas: readonly BlockMeta[]
@@ -167,6 +204,11 @@ export interface BroadcastTxSyncResponse extends TxData {
   readonly hash: Uint8Array
 }
 
+/**
+ * Status information for a peer-to-peer communication channel.
+ *
+ * Contains queue sizes, priorities, and recent activity metrics.
+ */
 export interface ChannelStatus {
   id: number
   sendQueueCapacity: number
@@ -175,17 +217,32 @@ export interface ChannelStatus {
   recentlySent: bigint
 }
 
+/**
+ * Commit information containing validator signatures for a block.
+ *
+ * Includes the block ID and precommit votes from validators.
+ */
 export interface Commit {
   readonly blockId: BlockId
   readonly precommits: readonly (Vote | null)[]
 }
 
+/**
+ * Response containing commit information for a specific block.
+ *
+ * Includes the block header, commit signatures, and canonical status.
+ */
 export interface CommitResponse {
   readonly header: Header
   readonly commit: Commit
   readonly canonical: boolean
 }
 
+/**
+ * Status information for a peer connection.
+ *
+ * Contains connection duration, traffic monitoring, and channel information.
+ */
 export interface ConnectionStatus {
   duration: Duration
   sendMonitor: FlowStatus
@@ -193,32 +250,60 @@ export interface ConnectionStatus {
   channels: ChannelStatus[]
 }
 
+/**
+ * Configuration settings for the consensus algorithm.
+ *
+ * Contains file paths and validator configuration used by the consensus engine.
+ */
 export interface ConsensusConfig {
   home: string
   walFile: string
   privValidator: PrivValidatorConfig
 }
 
+/**
+ * Consensus parameters that govern blockchain behavior.
+ *
+ * Contains block size limits, validator constraints, and evidence rules.
+ */
 export interface ConsensusParams {
   readonly block: BlockParams
   readonly validator: ValidatorParams
 }
 
+/**
+ * Response containing consensus parameters for a specific block height.
+ */
 export interface ConsensusParamsResponse {
   readonly blockHeight: number
   readonly consensusParams: ConsensusParams
 }
 
+/**
+ * Response containing current consensus state information.
+ *
+ * Includes the current round state with height, round, and step information.
+ */
 export interface ConsensusStateResponse {
   readonly roundState: SimpleRoundState
 }
 
+/**
+ * Response containing a complete dump of consensus state.
+ *
+ * Used for debugging and includes configuration, round state, and peer states.
+ */
 export interface DumpConsensusStateResponse {
   config: ConsensusConfig
   roundState: RoundState
   peers: DumpPeerRoundState[]
 }
 
+/**
+ * Peer's consensus round state from a consensus state dump.
+ *
+ * Contains the peer's address, connection info, and detailed voting state.
+ */
 export interface DumpPeerRoundState {
   readonly address: string
   readonly server: string
@@ -226,6 +311,12 @@ export interface DumpPeerRoundState {
   readonly roundState: PeerRoundState
 }
 
+/**
+ * ABCI EndBlock response data.
+ *
+ * Contains the response from the application's EndBlock method,
+ * including validator updates and consensus parameter changes.
+ */
 export interface EndBlock {
   readonly responseBase: ResponseBase
   readonly validatorUpdates: null
@@ -241,6 +332,11 @@ export interface EndBlock {
  */
 export type Evidence = any;
 
+/**
+ * Event data from transaction or block execution.
+ *
+ * Contains event type and key-value attributes for application-specific events.
+ */
 export interface Event {
   readonly "@type": string
   readonly type: string
@@ -259,11 +355,21 @@ export interface EventAttribute {
   readonly value: string
 }
 
+/**
+ * Parameters governing evidence handling for byzantine behavior.
+ *
+ * Controls how long evidence is considered valid and stored.
+ */
 export interface EvidenceParams {
   readonly maxAgeNumBlocks: number
   readonly maxAgeDuration: number
 }
 
+/**
+ * Flow status information for network connections.
+ *
+ * Contains bandwidth usage, transfer rates, and connection timing metrics.
+ */
 export interface FlowStatus {
   active: boolean
   start: ReadonlyDateWithNanoseconds
@@ -369,10 +475,20 @@ export interface Header {
 
 export type HealthResponse = null;
 
+/**
+ * Vote set for a specific block height (placeholder interface).
+ *
+ * Used in consensus state tracking but currently empty.
+ */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface HeightVoteSet {
 }
 
+/**
+ * Response containing network information.
+ *
+ * Includes listening status, peer count, and detailed peer information.
+ */
 export interface NetInfoResponse {
   listening: boolean
   listeners: string[]
@@ -380,6 +496,11 @@ export interface NetInfoResponse {
   peers: Peer[]
 }
 
+/**
+ * Information about a Tendermint node.
+ *
+ * Contains node version, network details, and supported features.
+ */
 export interface NodeInfo {
   /** IP and port */
   readonly listenAddr: string
@@ -392,16 +513,31 @@ export interface NodeInfo {
   readonly versionSet: VersionInfo[]
 }
 
+/**
+ * Part set information (placeholder interface).
+ *
+ * Used for block part tracking but currently empty.
+ */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface PartSet {
 
 }
 
+/**
+ * Header information for a block part set.
+ *
+ * Contains the total number of parts and the hash of the complete set.
+ */
 export interface PartSetHeader {
   readonly total: bigint
   readonly hash: Uint8Array
 }
 
+/**
+ * Information about a connected peer.
+ *
+ * Contains peer node info, connection status, and network details.
+ */
 export interface Peer {
   nodeInfo: NodeInfo
   isOutbound: boolean
@@ -409,6 +545,11 @@ export interface Peer {
   remoteIp: string
 }
 
+/**
+ * Detailed consensus state information for a peer.
+ *
+ * Contains the peer's current voting state, proposals, and consensus progress.
+ */
 export interface PeerRoundState {
   readonly height: number
   readonly round: number
@@ -427,6 +568,11 @@ export interface PeerRoundState {
   readonly catchupCommit: BitArray
 }
 
+/**
+ * Configuration for a private validator.
+ *
+ * Contains paths to validator files and remote signer configuration.
+ */
 export interface PrivValidatorConfig {
   home: string
   signState: string
@@ -434,12 +580,22 @@ export interface PrivValidatorConfig {
   remoteSigner: RemoteSignerConfig | null
 }
 
+/**
+ * A single operation in a Merkle proof.
+ *
+ * Contains the operation type, key, and data needed for proof verification.
+ */
 export interface ProofOp {
   readonly type: string
   readonly key: Uint8Array
   readonly data: Uint8Array
 }
 
+/**
+ * Consensus proposal for a new block.
+ *
+ * Contains proposal details including block ID, timestamp, and signature.
+ */
 export interface Proposal {
   readonly type: number // 1 for PreVote, 2 for PreCommit
   readonly height: number
@@ -450,10 +606,20 @@ export interface Proposal {
   readonly signature: Uint8Array | undefined
 }
 
+/**
+ * Merkle proof for ABCI query results.
+ *
+ * Contains the series of operations needed to verify a query result.
+ */
 export interface QueryProof {
   readonly ops: readonly ProofOp[]
 }
 
+/**
+ * Configuration for remote validator signing.
+ *
+ * Contains connection settings and security parameters for remote signers.
+ */
 export interface RemoteSignerConfig {
   readonly serverAddress: string
   readonly dialMaxRetries: number
@@ -491,6 +657,11 @@ export type Response
     */
     | ValidatorsResponse;
 
+/**
+ * Base response structure for ABCI operations.
+ *
+ * Contains error information, data, events, and logs common to all ABCI responses.
+ */
 export interface ResponseBase {
   readonly error: string | null
   readonly data: Uint8Array
@@ -499,6 +670,11 @@ export interface ResponseBase {
   readonly info: string
 }
 
+/**
+ * Complete consensus round state information.
+ *
+ * Contains detailed consensus progress including proposals, votes, and validator states.
+ */
 export interface RoundState {
   readonly height: number
   readonly round: number
@@ -522,6 +698,11 @@ export interface RoundState {
   readonly triggeredTimeoutPrecommit: boolean
 }
 
+/**
+ * Simplified consensus round state representation.
+ *
+ * Contains basic consensus progress information in a compact format.
+ */
 export interface SimpleRoundState {
   readonly height: number
   readonly round: number
@@ -549,6 +730,11 @@ export interface StatusResponse {
   readonly validatorInfo: Validator
 }
 
+/**
+ * Node synchronization status information.
+ *
+ * Contains the latest block information and whether the node is catching up.
+ */
 export interface SyncInfo {
   readonly earliestAppHash?: Uint8Array
   readonly earliestBlockHash?: Uint8Array
@@ -561,12 +747,22 @@ export interface SyncInfo {
   readonly catchingUp: boolean
 }
 
+/**
+ * Transaction execution data and gas usage information.
+ *
+ * Contains the base response data plus gas wanted and used amounts.
+ */
 export interface TxData {
   readonly responseBase: ResponseBase
   readonly gasWanted: bigint
   readonly gasUsed: bigint
 }
 
+/**
+ * Transaction event from WebSocket subscriptions.
+ *
+ * Contains the transaction data, hash, and execution results.
+ */
 export interface TxEvent {
   readonly tx: Uint8Array
   readonly hash: Uint8Array
@@ -574,6 +770,11 @@ export interface TxEvent {
   readonly result: TxData
 }
 
+/**
+ * Merkle proof for transaction inclusion in a block.
+ *
+ * Contains the transaction data, root hash, and proof information.
+ */
 export interface TxProof {
   readonly data: Uint8Array
   readonly rootHash: Uint8Array
@@ -609,22 +810,40 @@ export interface TxResponse {
   readonly result: TxData
 }
 
+/**
+ * Transaction execution result.
+ *
+ * Contains gas usage and execution status for a single transaction.
+ */
 export interface TxResult {
   readonly responseBase: ResponseBase
   readonly gasWanted: bigint
   readonly gasUsed: bigint
 }
 
+/**
+ * Response from transaction search queries.
+ *
+ * Contains matching transactions and total count for pagination.
+ */
 export interface TxSearchResponse {
   readonly txs: readonly TxResponse[]
   readonly totalCount: number
 }
 
+/**
+ * Parameters controlling transaction size limits.
+ */
 export interface TxSizeParams {
   readonly maxBytes: number
   readonly maxGas: number
 }
 
+/**
+ * Response containing unconfirmed transactions from the mempool.
+ *
+ * Includes transaction count, total size, and the raw transaction data.
+ */
 export interface UnconfirmedTxsResponse {
   readonly nTxs: bigint
   readonly total: bigint
@@ -632,6 +851,11 @@ export interface UnconfirmedTxsResponse {
   readonly txs: readonly Uint8Array[]
 }
 
+/**
+ * Validator information including identity and voting power.
+ *
+ * Contains the validator's address, public key, and consensus weight.
+ */
 export interface Validator {
   readonly address: Uint8Array
   readonly pubkey?: ValidatorPubkey
@@ -640,10 +864,20 @@ export interface Validator {
   readonly proposerPriority?: bigint
 }
 
+/**
+ * Parameters governing validator public key types.
+ *
+ * Specifies which public key algorithms are allowed for validators.
+ */
 export interface ValidatorParams {
   readonly pubKeyTypeUrls: readonly string[]
 }
 
+/**
+ * Complete validator set with proposer information.
+ *
+ * Contains all validators and identifies the current block proposer.
+ */
 export interface ValidatorSet {
   readonly validators: readonly Validator[]
   readonly proposer: Validator | null
@@ -662,17 +896,32 @@ export interface ValidatorsResponse {
   readonly validators: readonly Validator[]
 }
 
+/**
+ * Validator update information from block execution.
+ *
+ * Contains changes to validator set including power updates.
+ */
 export interface ValidatorUpdate {
   readonly pubkey: ValidatorPubkey
   readonly votingPower: bigint
 }
 
+/**
+ * Software version information.
+ *
+ * Contains component name, version string, and whether it's optional.
+ */
 export interface VersionInfo {
   readonly name: string
   readonly version: string
   readonly optional: boolean
 }
 
+/**
+ * Consensus vote from a validator.
+ *
+ * Contains vote type, validator information, block ID, and signature.
+ */
 export interface Vote {
   readonly type: VoteType
   readonly validatorAddress: Uint8Array
@@ -684,6 +933,11 @@ export interface Vote {
   readonly signature: Uint8Array
 }
 
+/**
+ * Vote set information (placeholder interface).
+ *
+ * Used for tracking consensus votes but currently empty.
+ */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface VoteSet {
 }

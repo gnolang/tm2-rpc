@@ -178,6 +178,12 @@ export function assertString(value: string): string {
   return value;
 }
 
+/**
+ * Converts a dictionary object to a Map with string keys and values.
+ *
+ * @param obj - The dictionary object to convert
+ * @returns A Map with string keys and string values
+ */
 export function dictionaryToStringMap(obj: Record<string, unknown>): Map<string, string> {
   const out = new Map<string, string>();
   for (const key of Object.keys(obj)) {
@@ -193,6 +199,12 @@ export function dictionaryToStringMap(obj: Record<string, unknown>): Map<string,
 // Encodings needed for hashing block headers
 // Several of these functions are inspired by https://github.com/nomic-io/js-tendermint/blob/tendermint-0.30/src/
 
+/**
+ * Encodes a block ID using Amino encoding format.
+ *
+ * @param blockId - The block ID to encode
+ * @returns Amino-encoded block ID as bytes
+ */
 export function encodeBlockId(blockId: BlockId): Uint8Array {
   return Uint8Array.from([0x0a, blockId.hash.length, ...blockId.hash, 0x12, blockId.parts.hash.length + 4, 0x08, blockId.parts.total, 0x12, blockId.parts.hash.length, ...blockId.parts.hash]);
 }

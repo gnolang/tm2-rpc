@@ -42,6 +42,16 @@ export class HttpBatchClient implements RpcClient {
     reject: (a: Error) => void
   }> = [];
 
+  /**
+   * Creates a new HTTP batch client for JSON-RPC requests.
+   *
+   * Automatically batches requests and sends them at regular intervals to improve
+   * performance when making many concurrent RPC calls.
+   *
+   * @param endpoint - The RPC endpoint URL or HttpEndpoint configuration
+   * @param options - Optional configuration for batch behavior
+   * @throws Error if the endpoint URL is missing a protocol
+   */
   public constructor(endpoint: string | HttpEndpoint, options: Partial<HttpBatchClientOptions> = {
   }) {
     this.options = {
@@ -62,6 +72,12 @@ export class HttpBatchClient implements RpcClient {
     this.validate();
   }
 
+  /**
+   * Disconnects the client and cleans up resources.
+   *
+   * Stops the internal timer that dispatches batched requests. Call this method
+   * when you're done using the client to prevent memory leaks.
+   */
   public disconnect(): void {
     if (this.timer) {
       clearInterval(this.timer);
@@ -69,6 +85,17 @@ export class HttpBatchClient implements RpcClient {
     this.timer = undefined;
   }
 
+  /**
+   * Executes a JSON-RPC request using the batching mechanism.
+   *
+   * Adds the request to the internal queue and returns a promise that resolves
+   * when the request is processed. If the queue reaches the batch size limit,
+   * the batch is immediately dispatched.
+   *
+   * @param request - The JSON-RPC request to execute
+   * @returns Promise that resolves with the JSON-RPC response
+   * @throws Error if the request fails or returns a JSON-RPC error
+   */
   public async execute(request: JsonRpcRequest): Promise<JsonRpcSuccessResponse> {
     return new Promise((resolve, reject) => {
       this.queue.push({
@@ -84,6 +111,11 @@ export class HttpBatchClient implements RpcClient {
     });
   }
 
+  /**
+   * Validates the client configuration options.
+   *
+   * @throws Error if batchSizeLimit is not a safe positive integer
+   */
   private validate(): void {
     if (
       !this.options.batchSizeLimit
@@ -95,8 +127,11 @@ export class HttpBatchClient implements RpcClient {
   }
 
   /**
-   * This is called in an interval where promise rejections cannot be handled.
-   * So this is not async and HTTP errors need to be handled by the queued promises.
+   * Processes the current batch of queued requests.
+   *
+   * This is called on an interval where promise rejections cannot be handled,
+   * so this is not async and HTTP errors need to be handled by the queued promises.
+   * Sends up to batchSizeLimit requests in a single HTTP call.
    */
   private tick(): void {
     // Avoid race conditions

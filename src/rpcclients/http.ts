@@ -1,5 +1,12 @@
 import fetch from "cross-fetch";
 
+/**
+ * Filters HTTP responses and throws an error for bad status codes.
+ *
+ * @param res - The HTTP response object
+ * @returns The response object if status is good (< 400)
+ * @throws Error if status code is 400 or higher
+ */
 function filterBadStatus(res: any): any {
   if (res.status >= 400) {
     throw new Error(`Bad status on response: ${res.status}`);

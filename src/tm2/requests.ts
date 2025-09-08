@@ -46,16 +46,29 @@ export interface AbciQueryRequest {
   readonly params: AbciQueryParams
 }
 
+/**
+ * Request for querying a range of block headers.
+ *
+ * Used to retrieve metadata for multiple blocks within a specified height range.
+ */
 export interface BlockchainRequest {
   readonly method: Method.Blockchain
   readonly params: BlockchainRequestParams
 }
 
+/**
+ * Parameters for blockchain range queries.
+ */
 export interface BlockchainRequestParams {
   readonly minHeight?: number
   readonly maxHeight?: number
 }
 
+/**
+ * Request for querying a specific block by height.
+ *
+ * Returns complete block data including header, transactions, and evidence.
+ */
 export interface BlockRequest {
   readonly method: Method.Block
   readonly params: {
@@ -63,6 +76,12 @@ export interface BlockRequest {
   }
 }
 
+/**
+ * Request for querying block execution results.
+ *
+ * Returns the results of transaction execution for a specific block,
+ * including gas usage, events, and execution status.
+ */
 export interface BlockResultsRequest {
   readonly method: Method.BlockResults
   readonly params: {
@@ -93,11 +112,21 @@ export interface BroadcastTxRequest {
   readonly params: BroadcastTxParams
 }
 
+/**
+ * Components for building event subscription or transaction search queries.
+ *
+ * Combines tag-based filters and raw query strings for flexible query construction.
+ */
 export interface BuildQueryComponents {
   readonly tags?: readonly QueryTag[]
   readonly raw?: string
 }
 
+/**
+ * Request for querying commit information for a specific block.
+ *
+ * Returns commit data including validator signatures and proof information.
+ */
 export interface CommitRequest {
   readonly method: Method.Commit
   readonly params: {
@@ -105,6 +134,12 @@ export interface CommitRequest {
   }
 }
 
+/**
+ * Request for querying consensus parameters.
+ *
+ * Returns the consensus parameters (block size limits, validator rules, etc.)
+ * that were active at a specific block height.
+ */
 export interface ConsensusParamsRequest {
   readonly method: Method.ConsensusParams
   readonly params: {
@@ -112,18 +147,41 @@ export interface ConsensusParamsRequest {
   }
 }
 
+/**
+ * Request for querying the current consensus state.
+ *
+ * Returns information about the current consensus round, including
+ * height, round, step, and voting progress.
+ */
 export interface ConsensusStateRequest {
   readonly method: Method.ConsensusState
 }
 
+/**
+ * Request for dumping the complete consensus state.
+ *
+ * Returns detailed consensus information including configuration,
+ * round state, and peer states for debugging purposes.
+ */
 export interface DumpConsensusStateRequest {
   readonly method: Method.DumpConsensusState
 }
 
+/**
+ * Request for querying the genesis document.
+ *
+ * Returns the genesis document containing initial chain state,
+ * validator set, and application configuration.
+ */
 export interface GenesisRequest {
   readonly method: Method.Genesis
 }
 
+/**
+ * Request for checking node health status.
+ *
+ * Simple health check endpoint that returns success if the node is operational.
+ */
 export interface HealthRequest {
   readonly method: Method.Health
 }
@@ -187,14 +245,30 @@ export enum Method {
   Validators = "validators",
 }
 
+/**
+ * Request for querying network information.
+ *
+ * Returns information about connected peers, network listeners,
+ * and overall network connectivity status.
+ */
 export interface NetInfoRequest {
   readonly method: Method.NetInfo
 }
 
+/**
+ * Request for querying the number of unconfirmed transactions.
+ *
+ * Returns the count of transactions currently in the mempool.
+ */
 export interface NumUnconfirmedTxsRequest {
   readonly method: Method.NumUnconfirmedTxs
 }
 
+/**
+ * Key-value pair for event filtering in queries.
+ *
+ * Used to filter transactions or events based on specific attributes.
+ */
 export interface QueryTag {
   readonly key: string
   readonly value: string
@@ -226,9 +300,18 @@ export type Request
     */
     | ValidatorsRequest;
 
+/**
+ * Parameters for status queries with optional height filtering.
+ */
 export interface StatusParams {
   readonly heightGte?: number
 }
+/**
+ * Request for querying node status information.
+ *
+ * Returns comprehensive node status including sync state,
+ * validator information, and network details.
+ */
 export interface StatusRequest {
   readonly method: Method.Status
   readonly params?: StatusParams
@@ -242,15 +325,29 @@ export interface TxParams {
   readonly hash: Uint8Array
 }
 
+/**
+ * Request for querying a specific transaction by hash.
+ *
+ * Returns transaction data, execution results, and block information.
+ */
 export interface TxRequest {
   readonly method: Method.Tx
   readonly params: TxParams
 }
 
+/**
+ * Parameters for querying unconfirmed transactions with optional limit.
+ */
 export interface UnconfirmedTxsParams {
   readonly limit?: number
 }
 
+/**
+ * Request for querying unconfirmed transactions from mempool.
+ *
+ * Returns a list of transactions currently in the mempool
+ * waiting to be included in a block.
+ */
 export interface UnconfirmedTxsRequest {
   readonly method: Method.UnconfirmedTxs
   readonly params: {
@@ -287,6 +384,12 @@ export interface ValidatorsParams {
   readonly height?: number
 }
 
+/**
+ * Request for querying the validator set.
+ *
+ * Returns the validator set with voting power and public keys
+ * for a specific block height.
+ */
 export interface ValidatorsRequest {
   readonly method: Method.Validators
   readonly params: ValidatorsParams

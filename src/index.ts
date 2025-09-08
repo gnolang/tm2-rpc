@@ -44,6 +44,13 @@ export {
   BlockIdFlag,
 } from "./types";
 
+/**
+ * Initializes a connection to a Tendermint2 RPC endpoint and demonstrates various API calls.
+ *
+ * This function connects to the test network and executes a series of RPC method calls
+ * to showcase the functionality of the Tm2 client, including querying blockchain info,
+ * blocks, validators, transactions, and network status.
+ */
 const init = async () => {
   const client = await connectTm2("https://rpc.test8.testnets.gno.land/");
 

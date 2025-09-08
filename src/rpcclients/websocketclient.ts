@@ -20,10 +20,23 @@ import {
   hasProtocol, RpcStreamingClient, SubscriptionEvent,
 } from "./rpcclient";
 
+/**
+ * Default error handler that simply re-throws the error.
+ *
+ * @param error - The error to handle
+ * @throws The same error that was passed in
+ */
 function defaultErrorHandler(error: any): never {
   throw error;
 }
 
+/**
+ * Converts a WebSocket message event to a JSON-RPC response.
+ *
+ * @param message - The WebSocket message event
+ * @returns The parsed JSON-RPC response
+ * @throws Error if message type is unexpected or JSON parsing fails
+ */
 function toJsonRpcResponse(message: SocketWrapperMessageEvent): JsonRpcResponse {
   // this should never happen, but I want an alert if it does
   if (message.type !== "message") {
@@ -87,6 +100,11 @@ class RpcEventProducer implements Producer<SubscriptionEvent> {
     }
   }
 
+  /**
+   * Establishes connection to the client and sets up event stream subscriptions.
+   *
+   * @param listener - The event listener to receive subscription events
+   */
   protected connectToClient(listener: Listener<SubscriptionEvent>): void {
     const responseStream = this.socket.events.map(toJsonRpcResponse);
 
@@ -135,6 +153,9 @@ class RpcEventProducer implements Producer<SubscriptionEvent> {
     this.subscriptions.push(idSubscription, idEventSubscription, nonResponseSubscription);
   }
 
+  /**
+   * Closes all active subscriptions and clears the subscription list.
+   */
   protected closeSubscriptions(): void {
     for (const subscription of this.subscriptions) {
       subscription.unsubscribe();
