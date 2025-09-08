@@ -19,5 +19,5 @@ jobs:
       run: npm install -g pnpm && pnpm install
     - name: Build the project
       run: pnpm build
-    - name: Build chains and run tests
-      run: cd ${{ github.workspace }} && pnpm test
+    - name: Run tests
+      run: pnpm test
