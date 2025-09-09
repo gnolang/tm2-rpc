@@ -8,15 +8,6 @@ jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
-    services:
-      gno:
-        image: ghcr.io/gnolang/gno/gnodev:master
-        options: |
-            --name gno  --entrypoint /usr/bin/gnodev -e GITHUB_ACTIONS=true -e CI=true ghcr.io/gnolang/gno/gnodev:master local --add-account g1ldng3lt5mdmt92w2xphmjqu2r0pespsyfge66x=100000000000ugnot 
-            ls
-        ports:
-          - 8888:8888
-          - 26657:26657
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
@@ -29,4 +20,6 @@ jobs:
     - name: Build the project
       run: pnpm build
     - name: Run tests
-      run: pnpm test
+      run: |
+          docker compose up -d
+          pnpm test
