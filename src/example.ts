@@ -63,11 +63,6 @@ const init = async () => {
   }), {
     depth: null,
   }));
-  console.log(util.inspect(await client.tx({
-    hash: fromBase64("vKO6319Uw72z2YO0ZHU90frSsQKZea4v/+DNC0j0KJM="),
-  }), {
-    depth: null,
-  }));
   console.log(util.inspect(await client.unconfirmedTxs(10), {
     depth: null,
   }));
@@ -82,6 +77,13 @@ const init = async () => {
     data: fromBase64("Z2FzUHJpY2U="),
     height: 2,
     prove: true,
+  }), {
+    depth: null,
+  }));
+
+  const client2 = await connectTm2("https://rpc.test8.testnets.gno.land");
+  console.log(util.inspect(await client2.tx({
+    hash: fromBase64("vKO6319Uw72z2YO0ZHU90frSsQKZea4v/+DNC0j0KJM="),
   }), {
     depth: null,
   }));
