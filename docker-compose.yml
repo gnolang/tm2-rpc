@@ -1,8 +1,32 @@
 services:
-  gno:
-    image: ghcr.io/gnolang/gno/gnodev:master
+  gnoland:
+    image: "ghcr.io/gnolang/gno/gnoland:master"
+    entrypoint: "sh"
+    command:
+      - -c
+      - |
+        gnoland secrets init
+        gnoland config init
+        gnoland config set rpc.laddr tcp://0.0.0.0:26657
+        gnoland start --lazy --skip-genesis-sig-verification
     ports:
-      - "8888:8888"
-      - "26657:26657" 
-    entrypoint: ["/usr/bin/gnodev", "local", "--add-account", "g1ldng3lt5mdmt92w2xphmjqu2r0pespsyfge66x=100000000000ugnot", "--node-rpc-listener","0.0.0.0:26657"]
-    container_name: gno
+      - 127.0.0.1:26657:26657
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:26657/health"]
+      interval: 5s
+      timeout: 10s
+      retries: 60
+      start_period: 30s
+
+  supernova:
+    image: ghcr.io/gnolang/supernova:1.5.2
+    command:
+      - --sub-accounts=5
+      - --transactions=1000
+      - --chain-id=dev
+      - --url=http://gnoland:26657
+      - --mnemonic=source bonus chronic canvas draft south burst lottery vacant surface solve popular case indicate oppose farm nothing bullet exhibit title speed wink action roast
+    restart: on-failure
+    depends_on:
+      gnoland:
+        condition: service_healthy
