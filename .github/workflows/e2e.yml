@@ -8,6 +8,13 @@ jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    services:
+      gno:
+        image: ghcr.io/gnolang/gno/gnodev
+        options: --name gno --entrypoint '/usr/bin/gnodev local --add-account g1ldng3lt5mdmt92w2xphmjqu2r0pespsyfge66x=100000000000ugnot'
+        ports:
+          - 8888:8888
+          - 26657:26657
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
