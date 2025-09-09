@@ -22,11 +22,11 @@ import {
  */
 export interface AbciInfoResponse {
   /** Application-specific data returned by the ABCI app */
-  readonly data?: string
-  /** The height of the last block processed by the application */
-  readonly lastBlockHeight?: number
-  /** Hash of the application state after the last block */
-  readonly lastBlockAppHash?: Uint8Array
+  readonly responseBase: ResponseBase
+  readonly abciVersion: string
+  readonly appVersion: string
+  readonly lastBlockHeight: bigint
+  readonly lastBlockAppHash: Uint8Array
 }
 
 /**
