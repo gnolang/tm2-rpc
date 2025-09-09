@@ -23,4 +23,4 @@ jobs:
       run: |
           docker compose up -d
           pnpm test
-          ./node_modules/.bin/wait-on  http://localhost:26657 && node build/example.js
+          ./node_modules/.bin/wait-on  http://localhost:26657 --timeout 30000 && node build/example.js
