@@ -24,5 +24,5 @@ jobs:
           docker compose up -d
           docker ps
           pnpm test
-          ./node_modules/.bin/wait-on  http://::1:26657/status --timeout 30000 && node build/example.js
+          ./node_modules/.bin/wait-on  http://gno:26657/status --timeout 30000 && node build/example.js
           docker compose logs
