@@ -11,7 +11,7 @@ jobs:
     services:
       gno:
         image: ghcr.io/gnolang/gno/gnodev:master
-        options: --name gno --entrypoint '/usr/bin/gnodev local --add-account g1ldng3lt5mdmt92w2xphmjqu2r0pespsyfge66x=100000000000ugnot'
+        options: --name gno --entrypoint `/usr/bin/gnodev local --add-account g1ldng3lt5mdmt92w2xphmjqu2r0pespsyfge66x=100000000000ugnot`
         ports:
           - 8888:8888
           - 26657:26657
