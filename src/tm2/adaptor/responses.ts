@@ -68,10 +68,11 @@ interface GenesisResult {
  * Raw RPC response structure for ABCI info query
  */
 interface RpcAbciInfoResponse {
-  readonly data?: string
-  readonly last_block_height?: string
-  /** base64 encoded */
-  readonly last_block_app_hash?: string
+  readonly ResponseBase: RpcResponseBase
+  readonly ABCIVersion: string
+  readonly AppVersion: string
+  readonly LastBlockHeight: string
+  readonly LastBlockAppHash: string
 }
 
 /**
@@ -813,9 +814,11 @@ export interface RpcVoteSet {
  */
 function decodeAbciInfo(data: RpcAbciInfoResponse): responses.AbciInfoResponse {
   return {
-    data: data.data,
-    lastBlockHeight: may(apiToSmallInt, data.last_block_height),
-    lastBlockAppHash: may(fromBase64, data.last_block_app_hash),
+    responseBase: decodeResponseBase(data.ResponseBase),
+    abciVersion: assertString(data.ABCIVersion),
+    appVersion: assertString(data.AppVersion),
+    lastBlockHeight: apiToBigInt(assertString(data.LastBlockHeight)),
+    lastBlockAppHash: fromBase64(assertString(data.LastBlockAppHash)),
   };
 }
 

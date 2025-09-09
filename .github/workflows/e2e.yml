@@ -1,0 +1,27 @@
+name: E2E Tests
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 20.x
+        check-latest: true
+
+    - name: Install dependencies
+      run: npm install -g pnpm && pnpm install
+    - name: Build the project
+      run: pnpm build
+    - name: Run tests
+      run: |
+          docker compose up -d
+          pnpm test
+          ./node_modules/.bin/wait-on  http://127.0.0.1:26657/status --timeout 30000 && sleep 20s &&node build/example.js
+          docker compose logs

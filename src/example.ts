@@ -15,24 +15,24 @@ import {
  * blocks, validators, transactions, and network status.
  */
 const init = async () => {
-  const client = await connectTm2("https://rpc.test8.testnets.gno.land/");
+  const client = await connectTm2("http://localhost:26657");
 
   console.log(util.inspect(await client.abciInfo(), {
     depth: null,
   }));
-  console.log(util.inspect(await client.block(123), {
+  console.log(util.inspect(await client.block(2), {
     depth: null,
   }));
-  console.log(util.inspect(await client.blockResults(1234), {
+  console.log(util.inspect(await client.blockResults(2), {
     depth: null,
   }));
-  console.log(util.inspect(await client.blockchain(123, 124), {
+  console.log(util.inspect(await client.blockchain(2, 3), {
     depth: null,
   }));
-  console.log(util.inspect(await client.commit(123), {
+  console.log(util.inspect(await client.commit(2), {
     depth: null,
   }));
-  console.log(util.inspect(await client.consensusParams(123), {
+  console.log(util.inspect(await client.consensusParams(2), {
     depth: null,
   }));
   console.log(util.inspect(await client.consensusState(), {
@@ -59,12 +59,7 @@ const init = async () => {
     depth: null,
   }));
   console.log(util.inspect(await client.status({
-    heightGte: 123,
-  }), {
-    depth: null,
-  }));
-  console.log(util.inspect(await client.tx({
-    hash: fromBase64("vKO6319Uw72z2YO0ZHU90frSsQKZea4v/+DNC0j0KJM="),
+    heightGte: 2,
   }), {
     depth: null,
   }));
@@ -72,7 +67,7 @@ const init = async () => {
     depth: null,
   }));
   console.log(util.inspect(await client.validators({
-    height: 123,
+    height: 2,
   }), {
     depth: null,
   }));
@@ -80,8 +75,15 @@ const init = async () => {
   console.log(util.inspect(await client.abciQuery({
     path: ".store/main/key",
     data: fromBase64("Z2FzUHJpY2U="),
-    height: 123,
+    height: 2,
     prove: true,
+  }), {
+    depth: null,
+  }));
+
+  const client2 = await connectTm2("https://rpc.test8.testnets.gno.land");
+  console.log(util.inspect(await client2.tx({
+    hash: fromBase64("vKO6319Uw72z2YO0ZHU90frSsQKZea4v/+DNC0j0KJM="),
   }), {
     depth: null,
   }));
