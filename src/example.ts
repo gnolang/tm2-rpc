@@ -20,19 +20,19 @@ const init = async () => {
   console.log(util.inspect(await client.abciInfo(), {
     depth: null,
   }));
-  console.log(util.inspect(await client.block(123), {
+  console.log(util.inspect(await client.block(2), {
     depth: null,
   }));
-  console.log(util.inspect(await client.blockResults(1234), {
+  console.log(util.inspect(await client.blockResults(2), {
     depth: null,
   }));
-  console.log(util.inspect(await client.blockchain(123, 124), {
+  console.log(util.inspect(await client.blockchain(2, 3), {
     depth: null,
   }));
-  console.log(util.inspect(await client.commit(123), {
+  console.log(util.inspect(await client.commit(2), {
     depth: null,
   }));
-  console.log(util.inspect(await client.consensusParams(123), {
+  console.log(util.inspect(await client.consensusParams(2), {
     depth: null,
   }));
   console.log(util.inspect(await client.consensusState(), {
@@ -80,7 +80,7 @@ const init = async () => {
   console.log(util.inspect(await client.abciQuery({
     path: ".store/main/key",
     data: fromBase64("Z2FzUHJpY2U="),
-    height: 123,
+    height: 2,
     prove: true,
   }), {
     depth: null,
