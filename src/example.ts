@@ -72,7 +72,7 @@ const init = async () => {
     depth: null,
   }));
   console.log(util.inspect(await client.validators({
-    height: 123,
+    height: 2,
   }), {
     depth: null,
   }));
