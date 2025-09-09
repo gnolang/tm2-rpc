@@ -59,7 +59,7 @@ const init = async () => {
     depth: null,
   }));
   console.log(util.inspect(await client.status({
-    heightGte: 123,
+    heightGte: 2,
   }), {
     depth: null,
   }));
