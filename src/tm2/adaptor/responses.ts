@@ -343,7 +343,9 @@ interface RpcHeader {
   readonly chain_id: string
   readonly height: string
   readonly time: string
-
+  readonly num_txs: string
+  readonly total_txs: string
+  readonly app_version: string
   readonly last_block_id: RpcBlockId
 
   /** hex encoded */
@@ -1235,7 +1237,9 @@ function decodeHeader(data: RpcHeader): responses.Header {
     chainId: assertNotEmpty(data.chain_id),
     height: apiToSmallInt(assertNotEmpty(data.height)),
     time: fromRfc3339WithNanoseconds(assertNotEmpty(data.time)),
-
+    numTxs: apiToBigInt(assertNotEmpty(data.num_txs)),
+    totalTxs: apiToBigInt(assertNotEmpty(data.total_txs)),
+    appVersion: assertNotEmpty(data.app_version),
     // When there is no last block ID (i.e. this block's height is 1), we get an empty structure like this:
     // { hash: '', parts: { total: 0, hash: '' } }
     lastBlockId: data.last_block_id.hash ? decodeBlockId(data.last_block_id) : null,

@@ -429,7 +429,9 @@ export interface Header {
   readonly height: number
   /** Block creation timestamp with nanosecond precision */
   readonly time: ReadonlyDateWithNanoseconds
-
+  readonly numTxs: bigint
+  readonly totalTxs: bigint
+  readonly appVersion: string
   /**
    * Block ID of the previous block.
    * This is null for the genesis block (height 1).
