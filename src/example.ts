@@ -15,7 +15,7 @@ import {
  * blocks, validators, transactions, and network status.
  */
 const init = async () => {
-  const client = await connectTm2("http://localhost:26657");
+  const client = await connectTm2("wss://rpc.test8.testnets.gno.land");
 
   console.log(util.inspect(await client.abciInfo(), {
     depth: null,

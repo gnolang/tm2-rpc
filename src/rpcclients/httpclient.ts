@@ -7,10 +7,10 @@ import {
 
 import {
   http,
-} from "./http";
+} from "./http.js";
 import {
   hasProtocol, RpcClient,
-} from "./rpcclient";
+} from "./rpcclient.js";
 
 /**
  * Configuration for HTTP RPC endpoints with custom headers.

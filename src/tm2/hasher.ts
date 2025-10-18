@@ -8,10 +8,10 @@ import {
   encodeString,
   encodeTime,
   encodeUvarint,
-} from "./encodings";
+} from "./encodings.js";
 import {
   Header,
-} from "./responses";
+} from "./responses.js";
 
 /**
  * Computes the hash of a transaction.

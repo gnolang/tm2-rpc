@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   isJsonRpcErrorResponse,
   JsonRpcId,
@@ -18,7 +19,7 @@ import {
 
 import {
   hasProtocol, RpcStreamingClient, SubscriptionEvent,
-} from "./rpcclient";
+} from "./rpcclient.js";
 
 /**
  * Default error handler that simply re-throws the error.

@@ -1,14 +1,15 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   ReadonlyDate,
 } from "readonly-date";
 
 import {
   ReadonlyDateWithNanoseconds,
-} from "../dates";
+} from "../dates.js";
 import {
   Duration,
   ValidatorPubkey,
-} from "../types";
+} from "../types.js";
 
 // ============================================================================
 // INTERFACES AND TYPES
@@ -663,7 +664,10 @@ export type Response
  * Contains error information, data, events, and logs common to all ABCI responses.
  */
 export interface ResponseBase {
-  readonly error: string | null
+  readonly error: {
+    readonly "@type": string
+    readonly value: string
+  }
   readonly data: Uint8Array
   readonly events: readonly Event[]
   readonly log: string

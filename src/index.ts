@@ -3,7 +3,7 @@ export {
   pubkeyToRawAddress,
   rawEd25519PubkeyToRawAddress,
   rawSecp256k1PubkeyToRawAddress,
-} from "./addresses";
+} from "./addresses.js";
 export {
   DateTime,
   fromRfc3339WithNanoseconds,
@@ -11,26 +11,14 @@ export {
   type ReadonlyDateWithNanoseconds,
   toRfc3339WithNanoseconds,
   toSeconds,
-} from "./dates";
+} from "./dates.js";
 // The public Tendermint34Client.create constructor allows manually choosing an RpcClient.
 // This is currently the only way to switch to the HttpBatchClient (which may become default at some point).
 // Due to this API, we make RPC client implementations public.
-export type {
-  HttpBatchClientOptions, HttpEndpoint, RpcClient,
-} from "./rpcclients";
-export {
-  HttpBatchClient, HttpClient, WebsocketClient,
-} from "./rpcclients";
+export * from "./rpcclients/index.js";
+export * from "./rpcclients/index.js";
 export {
   connectTm2,
-} from "./tendermintclient";
-export * from "./tm2";
-export type {
-  CommitSignature,
-  ValidatorEd25519Pubkey,
-  ValidatorPubkey,
-  ValidatorSecp256k1Pubkey,
-} from "./types";
-export {
-  BlockIdFlag,
-} from "./types";
+} from "./tendermintclient.js";
+export * from "./tm2/index.js";
+export * from "./types.js";

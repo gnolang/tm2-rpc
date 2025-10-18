@@ -4,18 +4,18 @@ import {
 
 import {
   createJsonRpcRequest,
-} from "../jsonrpc";
+} from "../jsonrpc.js";
 import {
   HttpClient,
   HttpEndpoint,
   RpcClient,
   WebsocketClient,
-} from "../rpcclients";
+} from "../rpcclients/index.js";
 import {
   Params, Responses,
-} from "./adaptor";
-import * as requests from "./requests";
-import * as responses from "./responses";
+} from "./adaptor/index.js";
+import * as requests from "./requests.js";
+import * as responses from "./responses.js";
 
 // ============================================================================
 // TYPES

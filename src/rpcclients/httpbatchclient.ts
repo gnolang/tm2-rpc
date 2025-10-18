@@ -7,13 +7,13 @@ import {
 
 import {
   http,
-} from "./http";
+} from "./http.js";
 import {
   HttpEndpoint,
-} from "./httpclient";
+} from "./httpclient.js";
 import {
   hasProtocol, RpcClient,
-} from "./rpcclient";
+} from "./rpcclient.js";
 
 export interface HttpBatchClientOptions {
   /** Interval for dispatching batches (in milliseconds) */

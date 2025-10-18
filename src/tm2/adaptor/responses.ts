@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable max-lines */
 import {
   fromAscii,
@@ -558,7 +559,11 @@ export interface RpcRemoteSignerConfig {
  * Base response structure for ABCI operations
  */
 interface RpcResponseBase {
-  readonly Error: string | null
+  readonly Error: {
+    readonly "@type": string
+    /** base64 encoded */
+    readonly value: string
+  }
   readonly Data: string | null
   readonly Events: RpcEvent[]
   readonly Log: string

@@ -3,7 +3,7 @@
 
 import {
   ReadonlyDateWithNanoseconds,
-} from "./dates";
+} from "./dates.js";
 
 /**
  * Represents a commit signature from a validator for a specific block.
