@@ -23,5 +23,5 @@ jobs:
       run: |
           docker compose up -d
           pnpm test
-          ./node_modules/.bin/wait-on  http://127.0.0.1:26657/status --timeout 30000 && sleep 20s &&node build/example.js
+          ./node_modules/.bin/wait-on  http://127.0.0.1:26657/status --timeout 30000 && sleep 20s && node dist/example.js
           docker compose logs
