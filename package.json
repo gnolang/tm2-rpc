@@ -1,12 +1,10 @@
 {
   "name": "@gnolang/tm2-rpc",
-  "version": "0.0.1",
+  "version": "0.0.10",
   "description": "Tendermint2 RPC clients",
   "license": "Apache-2.0",
-  "main": "build/index.js",
-  "types": "build/index.d.ts",
   "files": [
-    "build/",
+    "dist/",
     "*.md",
     "!*.spec.*",
     "!**/testdata/"
@@ -15,39 +13,57 @@
     "access": "public",
     "registry": "https://registry.npmjs.org"
   },
+  "type": "module",
   "scripts": {
     "lint": "eslint",
     "lint:fix": "eslint --fix",
-    "build": "rm -rf ./build && tsc",
+    "build": "tsc --noEmit && tsdown",
     "test": "vitest",
     "test:watch": "vitest --watch",
     "test:coverage": "vitest --coverage"
   },
   "dependencies": {
-    "@cosmjs/crypto": "^0.34.0",
-    "@cosmjs/encoding": "^0.34.0",
-    "@cosmjs/json-rpc": "^0.34.0",
-    "@cosmjs/math": "^0.34.0",
-    "@cosmjs/socket": "^0.34.0",
-    "@cosmjs/stream": "^0.34.0",
-    "@cosmjs/utils": "^0.34.0",
+    "@cosmjs/crypto": "^0.36.0",
+    "@cosmjs/encoding": "^0.36.0",
+    "@cosmjs/json-rpc": "^0.36.0",
+    "@cosmjs/math": "^0.36.0",
+    "@cosmjs/socket": "^0.36.0",
+    "@cosmjs/stream": "^0.36.0",
+    "@cosmjs/utils": "^0.36.0",
     "cross-fetch": "^4.1.0",
     "readonly-date": "^1.0.0",
     "xstream": "^11.14.0"
   },
   "devDependencies": {
-    "@bufbuild/protobuf": "^2.7.0",
-    "@eslint/js": "^9.30.1",
-    "@stylistic/eslint-plugin": "^5.1.0",
-    "@types/node": "^20.14.8",
+    "@arethetypeswrong/core": "^0.18.2",
+    "@bufbuild/protobuf": "^2.9.0",
+    "@eslint/js": "^9.36.0",
+    "@stylistic/eslint-plugin": "^5.4.0",
+    "@types/node": "^24.5.2",
     "@vitest/coverage-istanbul": "^3.2.4",
-    "eslint": "^9.30.1",
+    "eslint": "^9.36.0",
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "glob": "^11",
-    "ses": "^1.13.0",
-    "typescript": "^5.8.3",
-    "typescript-eslint": "^8.36.0",
+    "ses": "^1.14.0",
+    "tsdown": "^0.15.2",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.44.1",
     "vitest": "^3.2.4",
-    "wait-on": "^8.0.4"
+    "wait-on": "^9.0.1"
+  },
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.cts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
   }
 }

@@ -7,10 +7,10 @@ import {
 
 import {
   assertString,
-} from "./tm2/encodings";
+} from "./tm2/encodings.js";
 import {
   Duration,
-} from "./types";
+} from "./types.js";
 
 /**
  * Converts an integer value from the Tendermint RPC API to a JavaScript number.

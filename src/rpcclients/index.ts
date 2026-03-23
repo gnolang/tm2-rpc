@@ -2,16 +2,16 @@
 
 export {
   HttpBatchClient, type HttpBatchClientOptions,
-} from "./httpbatchclient";
+} from "./httpbatchclient.js";
 export {
   HttpClient, type HttpEndpoint,
-} from "./httpclient";
+} from "./httpclient.js";
 export type {
   RpcClient, RpcStreamingClient, SubscriptionEvent,
-} from "./rpcclient";
+} from "./rpcclient.js";
 export {
   instanceOfRpcStreamingClient,
-} from "./rpcclient";
+} from "./rpcclient.js";
 export {
   WebsocketClient,
-} from "./websocketclient";
+} from "./websocketclient.js";

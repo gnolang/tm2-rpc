@@ -4,10 +4,10 @@ import {
 
 import {
   ReadonlyDateWithNanoseconds,
-} from "../dates";
+} from "../dates.js";
 import {
   BlockId,
-} from "./responses";
+} from "./responses.js";
 
 // ============================================================================
 // INTERFACES AND TYPES
@@ -92,7 +92,7 @@ export function assertNotEmpty<T>(value: T): T {
   if (typeof value === "number" && value === 0) {
     throw new Error("must provide a non-zero value");
   }
-  else if ((value as any as Lengther).length === 0) {
+  else if ((value as unknown as Lengther).length === 0) {
     throw new Error("must provide a non-empty value");
   }
   return value;

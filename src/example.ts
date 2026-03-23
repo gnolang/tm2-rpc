@@ -15,7 +15,7 @@ import {
  * blocks, validators, transactions, and network status.
  */
 const init = async () => {
-  const client = await connectTm2("http://localhost:26657");
+  const client = await connectTm2("wss://rpc.betanet.testnets.gno.land");
 
   console.log(util.inspect(await client.abciInfo(), {
     depth: null,
@@ -81,11 +81,12 @@ const init = async () => {
     depth: null,
   }));
 
-  const client2 = await connectTm2("https://rpc.test8.testnets.gno.land");
+  const client2 = await connectTm2("https://rpc.betanet.testnets.gno.land");
   console.log(util.inspect(await client2.tx({
-    hash: fromBase64("vKO6319Uw72z2YO0ZHU90frSsQKZea4v/+DNC0j0KJM="),
+    hash: fromBase64("yae+vMzUj2K7bAvoGaAM/MqlYeFUER/cZODy0QSoPo8="),
   }), {
     depth: null,
   }));
+  process.exit(0);
 };
 init();

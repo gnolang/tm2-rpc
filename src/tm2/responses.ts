@@ -1,14 +1,15 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   ReadonlyDate,
 } from "readonly-date";
 
 import {
   ReadonlyDateWithNanoseconds,
-} from "../dates";
+} from "../dates.js";
 import {
   Duration,
   ValidatorPubkey,
-} from "../types";
+} from "../types.js";
 
 // ============================================================================
 // INTERFACES AND TYPES
@@ -342,6 +343,7 @@ export interface Event {
   readonly type: string
   readonly pkg_path: string
   readonly attrs: readonly EventAttribute[]
+  readonly [key: string]: unknown
 }
 
 /**
@@ -428,7 +430,9 @@ export interface Header {
   readonly height: number
   /** Block creation timestamp with nanosecond precision */
   readonly time: ReadonlyDateWithNanoseconds
-
+  readonly numTxs: bigint
+  readonly totalTxs: bigint
+  readonly appVersion: string
   /**
    * Block ID of the previous block.
    * This is null for the genesis block (height 1).
@@ -470,7 +474,7 @@ export interface Header {
    * Address of the validator that proposed this block.
    * Derived from the validator's public key.
    */
-  readonly proposerAddress: Uint8Array
+  readonly proposerAddress: string
 }
 
 export type HealthResponse = null;
@@ -663,7 +667,10 @@ export type Response
  * Contains error information, data, events, and logs common to all ABCI responses.
  */
 export interface ResponseBase {
-  readonly error: string | null
+  readonly error: {
+    readonly "@type": string
+    readonly value: string
+  }
   readonly data: Uint8Array
   readonly events: readonly Event[]
   readonly log: string
@@ -924,7 +931,7 @@ export interface VersionInfo {
  */
 export interface Vote {
   readonly type: VoteType
-  readonly validatorAddress: Uint8Array
+  readonly validatorAddress: string
   readonly validatorIndex: number
   readonly height: number
   readonly round: number

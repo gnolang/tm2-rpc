@@ -42,7 +42,6 @@ export default tseslint.config([
       "@stylistic/block-spacing": ["error", "always"],
       "@stylistic/semi": ["error", "always"],
       "@stylistic/quotes": ["error", "double"],
-      "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-unused-vars": [
         "error", // or "error"
         {

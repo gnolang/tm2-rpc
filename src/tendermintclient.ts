@@ -1,9 +1,9 @@
 import {
   HttpEndpoint,
-} from "./rpcclients";
+} from "./rpcclients/index.js";
 import {
   Tm2Client,
-} from "./tm2";
+} from "./tm2/index.js";
 
 /**
  * Auto-detects the version of the Tendermint backend and creates an appropriate RPC client.
