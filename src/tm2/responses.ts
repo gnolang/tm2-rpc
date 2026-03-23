@@ -343,6 +343,7 @@ export interface Event {
   readonly type: string
   readonly pkg_path: string
   readonly attrs: readonly EventAttribute[]
+  readonly [key: string]: unknown
 }
 
 /**
@@ -473,7 +474,7 @@ export interface Header {
    * Address of the validator that proposed this block.
    * Derived from the validator's public key.
    */
-  readonly proposerAddress: Uint8Array
+  readonly proposerAddress: string
 }
 
 export type HealthResponse = null;
@@ -930,7 +931,7 @@ export interface VersionInfo {
  */
 export interface Vote {
   readonly type: VoteType
-  readonly validatorAddress: Uint8Array
+  readonly validatorAddress: string
   readonly validatorIndex: number
   readonly height: number
   readonly round: number

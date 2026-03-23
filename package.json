@@ -1,6 +1,6 @@
 {
   "name": "@gnolang/tm2-rpc",
-  "version": "0.0.5",
+  "version": "0.0.10",
   "description": "Tendermint2 RPC clients",
   "license": "Apache-2.0",
   "files": [

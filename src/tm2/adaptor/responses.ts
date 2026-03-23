@@ -302,6 +302,7 @@ export interface RpcEvent {
   readonly type: string
   readonly pkg_path: string
   readonly attrs: readonly RpcEventAttribute[]
+  readonly [key: string]: unknown
 }
 
 /**
@@ -906,7 +907,7 @@ function decodeBlock(data: RpcBlock): responses.Block {
  */
 function decodeBlockId(data: RpcBlockId): responses.BlockId {
   return {
-    hash: fromBase64(assertNotEmpty(data.hash)),
+    hash: data.hash ? fromBase64(data.hash) : new Uint8Array(),
     parts: decodePartSetHeader(data.parts),
   };
 }
@@ -1177,11 +1178,13 @@ function decodeEndBlock(data: RpcEndBlock): responses.EndBlock {
  * @returns Decoded event with type and attributes
  */
 export function decodeEvent(event: RpcEvent): responses.Event {
+  const { "@type": atType, type, pkg_path, attrs, ...extra } = event;
   return {
-    "@type": assertNotEmpty(event["@type"]),
-    type: event.type,
-    attrs: event.attrs ? decodeAttributes(event.attrs) : [],
-    pkg_path: assertNotEmpty(event.pkg_path), // This is not used in the Tendermint API, but we keep it for compatibility
+    ...extra,
+    "@type": assertNotEmpty(atType),
+    type,
+    attrs: attrs ? decodeAttributes(attrs) : [],
+    pkg_path: assertNotEmpty(pkg_path),
   };
 }
 
@@ -1239,21 +1242,21 @@ function decodeHeader(data: RpcHeader): responses.Header {
     time: fromRfc3339WithNanoseconds(assertNotEmpty(data.time)),
     numTxs: apiToBigInt(assertNotEmpty(data.num_txs)),
     totalTxs: apiToBigInt(assertNotEmpty(data.total_txs)),
-    appVersion: assertNotEmpty(data.app_version),
+    appVersion: data.app_version,
     // When there is no last block ID (i.e. this block's height is 1), we get an empty structure like this:
     // { hash: '', parts: { total: 0, hash: '' } }
     lastBlockId: data.last_block_id.hash ? decodeBlockId(data.last_block_id) : null,
 
-    lastCommitHash: fromBase64(assertSet(data.last_commit_hash)),
+    lastCommitHash: data.last_commit_hash ? fromBase64(data.last_commit_hash) : new Uint8Array(),
     dataHash: data.data_hash ? fromBase64(data.data_hash) : new Uint8Array(),
 
     validatorsHash: fromBase64(assertSet(data.validators_hash)),
     nextValidatorsHash: fromBase64(assertSet(data.next_validators_hash)),
     consensusHash: fromBase64(assertSet(data.consensus_hash)),
-    appHash: fromBase64(assertSet(data.app_hash)),
+    appHash: data.app_hash ? fromBase64(data.app_hash) : new Uint8Array(),
     lastResultsHash: data.last_results_hash ? fromBase64(data.last_results_hash) : new Uint8Array(),
 
-    proposerAddress: fromBech32(assertNotEmpty(data.proposer_address)).data,
+    proposerAddress: assertNotEmpty(data.proposer_address),
   };
 }
 
@@ -1423,7 +1426,7 @@ function decodePrecommit(data: RpcVote): responses.Vote {
     round: apiToSmallInt(data.round),
     blockId: decodeBlockId(assertObject(data.block_id)),
     timestamp: fromRfc3339WithNanoseconds(assertNotEmpty(data.timestamp)),
-    validatorAddress: fromBase64(assertNotEmpty(data.validator_address)),
+    validatorAddress: assertNotEmpty(data.validator_address),
     validatorIndex: apiToSmallInt(assertNotEmpty(data.validator_index)),
     signature: fromBase64(assertNotEmpty(data.signature)),
   };

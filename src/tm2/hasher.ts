@@ -147,7 +147,7 @@ export function hashBlock(header: Header): Uint8Array {
   const encodedFields: readonly Uint8Array[] = [
     // Note: version encoding is commented out - may need to be added in future versions
     // encodeVersion(header.version),
-    encodeString(header.chainId), encodeUvarint(header.height), encodeTime(header.time), encodeBlockId(header.lastBlockId), encodeBytes(header.lastCommitHash), encodeBytes(header.dataHash), encodeBytes(header.validatorsHash), encodeBytes(header.nextValidatorsHash), encodeBytes(header.consensusHash), encodeBytes(header.appHash), encodeBytes(header.lastResultsHash), encodeBytes(header.proposerAddress),
+    encodeString(header.chainId), encodeUvarint(header.height), encodeTime(header.time), encodeBlockId(header.lastBlockId), encodeBytes(header.lastCommitHash), encodeBytes(header.dataHash), encodeBytes(header.validatorsHash), encodeBytes(header.nextValidatorsHash), encodeBytes(header.consensusHash), encodeBytes(header.appHash), encodeBytes(header.lastResultsHash), encodeString(header.proposerAddress),
   ];
 
   return hashTree(encodedFields);

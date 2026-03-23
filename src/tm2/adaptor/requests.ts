@@ -1,5 +1,5 @@
 import {
-  toBase64, toHex,
+  toBase64,
 } from "@cosmjs/encoding";
 import {
   JsonRpcRequest,
@@ -78,7 +78,7 @@ interface RpcValidatorsParams {
 function encodeAbciQueryParams(params: requests.AbciQueryParams): RpcAbciQueryParams {
   return {
     path: assertNotEmpty(params.path),
-    data: toHex(params.data),
+    data: toBase64(params.data),
     height: may(smallIntToApi, params.height),
     prove: params.prove,
   };
