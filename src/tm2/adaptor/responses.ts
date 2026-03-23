@@ -1178,7 +1178,9 @@ function decodeEndBlock(data: RpcEndBlock): responses.EndBlock {
  * @returns Decoded event with type and attributes
  */
 export function decodeEvent(event: RpcEvent): responses.Event {
-  const { "@type": atType, type, pkg_path, attrs, ...extra } = event;
+  const {
+    "@type": atType, type, pkg_path, attrs, ...extra
+  } = event;
   return {
     ...extra,
     "@type": assertNotEmpty(atType),
