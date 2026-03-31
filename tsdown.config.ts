@@ -5,7 +5,7 @@ import {
 export default defineConfig([
   {
     entry: ["./src/index.ts"],
-    unbundle: false,
+    unbundle: true,
     attw: true,
     platform: "node",
     nodeProtocol: "strip",
@@ -18,7 +18,7 @@ export default defineConfig([
   },
   {
     entry: ["./src/index.ts"],
-    unbundle: false,
+    unbundle: true,
     attw: true,
     platform: "node",
     target: "es2020",

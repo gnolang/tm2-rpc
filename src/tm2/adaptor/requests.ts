@@ -7,14 +7,14 @@ import {
 
 import {
   smallIntToApi,
-} from "../../inthelpers";
+} from "../../inthelpers.js";
 import {
   createJsonRpcRequest,
-} from "../../jsonrpc";
+} from "../../jsonrpc.js";
 import {
   assertNotEmpty, may,
-} from "../encodings";
-import * as requests from "../requests";
+} from "../encodings.js";
+import * as requests from "../requests.js";
 
 // ============================================================================
 // INTERFACES AND TYPES

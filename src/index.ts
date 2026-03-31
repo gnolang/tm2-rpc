@@ -16,7 +16,6 @@ export {
 // This is currently the only way to switch to the HttpBatchClient (which may become default at some point).
 // Due to this API, we make RPC client implementations public.
 export * from "./rpcclients/index.js";
-export * from "./rpcclients/index.js";
 export {
   connectTm2,
 } from "./tendermintclient.js";

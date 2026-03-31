@@ -10,14 +10,14 @@ import {
 
 import {
   DateWithNanoseconds,
-} from "../dates";
+} from "../dates.js";
 import {
   encodeBlockId,
   encodeBytes,
   encodeString,
   encodeTime,
   encodeUvarint,
-} from "./encodings";
+} from "./encodings.js";
 
 describe("encoding functions", () => {
   describe("encodeUvarint", () => {
