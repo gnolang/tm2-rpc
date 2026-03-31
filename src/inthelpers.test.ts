@@ -7,7 +7,7 @@ import {
   apiToSmallInt,
   durationFromString,
   smallIntToApi,
-} from "./inthelpers";
+} from "./inthelpers.js";
 
 describe("inthelpers", () => {
   describe("apiToSmallInt", () => {

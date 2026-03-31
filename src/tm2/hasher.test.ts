@@ -11,10 +11,10 @@ import {
 import {
   hashBlock,
   hashTx,
-} from "./hasher";
+} from "./hasher.js";
 import {
   Header,
-} from "./responses";
+} from "./responses.js";
 
 describe("hasher", () => {
   describe("hashTx", () => {

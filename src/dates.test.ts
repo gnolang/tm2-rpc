@@ -11,7 +11,7 @@ import {
   type ReadonlyDateWithNanoseconds,
   toRfc3339WithNanoseconds,
   toSeconds,
-} from "./dates";
+} from "./dates.js";
 
 describe("dates", () => {
   describe("fromRfc3339WithNanoseconds", () => {

@@ -5,7 +5,7 @@ import util from "util";
 
 import {
   connectTm2,
-} from "./tendermintclient";
+} from "./tendermintclient.js";
 
 /**
  * Initializes a connection to a Tendermint2 RPC endpoint and demonstrates various API calls.

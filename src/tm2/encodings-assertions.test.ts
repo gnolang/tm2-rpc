@@ -15,7 +15,7 @@ import {
   assertString,
   dictionaryToStringMap,
   may,
-} from "./encodings";
+} from "./encodings.js";
 
 describe("assertion functions", () => {
   describe("assertSet", () => {

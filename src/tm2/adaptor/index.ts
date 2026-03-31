@@ -1,6 +1,6 @@
 export {
   Params,
-} from "./requests";
+} from "./requests.js";
 export {
   Responses,
-} from "./responses";
+} from "./responses.js";

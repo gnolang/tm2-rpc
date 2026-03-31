@@ -11,7 +11,7 @@ import {
   pubkeyToRawAddress,
   rawEd25519PubkeyToRawAddress,
   rawSecp256k1PubkeyToRawAddress,
-} from "./addresses";
+} from "./addresses.js";
 
 describe("addresses", () => {
   describe("rawEd25519PubkeyToRawAddress", () => {

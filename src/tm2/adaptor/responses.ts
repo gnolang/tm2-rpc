@@ -2,7 +2,7 @@
 /* eslint-disable max-lines */
 import {
   fromAscii,
-  fromBase64, fromBech32, fromHex,
+  fromBase64, fromBech32,
 } from "@cosmjs/encoding";
 import {
   JsonRpcSuccessResponse,
@@ -13,17 +13,17 @@ import {
 
 import {
   fromRfc3339WithNanoseconds,
-} from "../../dates";
+} from "../../dates.js";
 import {
   apiToBigInt, apiToSmallInt,
   durationFromString,
-} from "../../inthelpers";
+} from "../../inthelpers.js";
 import {
   SubscriptionEvent,
-} from "../../rpcclients";
+} from "../../rpcclients/index.js";
 import {
   ValidatorPubkey,
-} from "../../types";
+} from "../../types.js";
 import {
   assertArray,
   assertBoolean,
@@ -34,11 +34,11 @@ import {
   assertString,
   dictionaryToStringMap,
   may,
-} from "../encodings";
+} from "../encodings.js";
 import {
   hashTx,
-} from "../hasher";
-import * as responses from "../responses";
+} from "../hasher.js";
+import * as responses from "../responses.js";
 
 // ============================================================================
 // INTERFACES AND TYPES
@@ -1004,7 +1004,7 @@ function decodeBlockchain(data: RpcBlockchainResponse): responses.BlockchainResp
 function decodeBroadcastTxCommit(data: RpcBroadcastTxCommitResponse): responses.BroadcastTxCommitResponse {
   return {
     height: apiToSmallInt(data.height),
-    hash: fromHex(assertNotEmpty(data.hash)),
+    hash: fromBase64(assertNotEmpty(data.hash)),
     checkTx: decodeTxData(assertObject(data.check_tx)),
     deliverTx: may(decodeTxData, data.deliver_tx),
   };
@@ -1019,7 +1019,7 @@ function decodeBroadcastTxCommit(data: RpcBroadcastTxCommitResponse): responses.
 function decodeBroadcastTxSync(data: RpcBroadcastTxSyncResponse): responses.BroadcastTxSyncResponse {
   return {
     ...decodeTxData(data),
-    hash: fromHex(assertNotEmpty(data.hash)),
+    hash: fromBase64(assertNotEmpty(data.hash)),
   };
 }
 
@@ -1225,7 +1225,7 @@ function decodeGenesis(data: RpcGenesisResponse): responses.GenesisResponse {
     chainId: assertNotEmpty(data.chain_id),
     consensusParams: decodeConsensusParams(data.consensus_params),
     validators: data.validators ? assertArray(data.validators).map(decodeValidatorGenesis) : [],
-    appHash: data.app_hash ? fromHex(assertSet(data.app_hash)) : new Uint8Array(), // empty string in kvstore app
+    appHash: data.app_hash ? fromBase64(assertSet(data.app_hash)) : new Uint8Array(), // empty string in kvstore app
     appState: data.app_state,
   };
 }
@@ -1653,7 +1653,7 @@ function decodeTxEvent(data: RpcTxEvent): responses.TxEvent {
 function _decodeTxProof(data: RpcTxProof): responses.TxProof {
   return {
     data: fromBase64(assertNotEmpty(data.data)),
-    rootHash: fromHex(assertNotEmpty(data.root_hash)),
+    rootHash: fromBase64(assertNotEmpty(data.root_hash)),
     proof: {
       total: apiToSmallInt(assertNotEmpty(data.proof.total)),
       index: apiToSmallInt(assertNotEmpty(data.proof.index)),
