@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "Tendermint2 RPC clients",
   "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gnolang/tm2-rpc.git"
+  },
   "files": [
     "dist/",
     "*.md",
@@ -20,7 +24,13 @@
     "build": "tsc --noEmit && tsdown",
     "test": "vitest",
     "test:watch": "vitest --watch",
-    "test:coverage": "vitest --coverage"
+    "test:coverage": "vitest --coverage",
+    "prepare": "pnpm build",
+    "prepublishOnly": "pnpm lint",
+    "changeset": "changeset",
+    "changeset:status": "changeset status",
+    "version:packages": "changeset version",
+    "release": "pnpm build && changeset publish"
   },
   "dependencies": {
     "@cosmjs/crypto": "^0.38.1",
@@ -37,6 +47,8 @@
   "devDependencies": {
     "@arethetypeswrong/core": "^0.18.2",
     "@bufbuild/protobuf": "^2.11.0",
+    "@changesets/changelog-github": "^1.0.1",
+    "@changesets/cli": "^2.31.1",
     "@eslint/js": "^10.0.1",
     "@stylistic/eslint-plugin": "^5.10.0",
     "@types/node": "^25.5.0",
@@ -66,5 +78,6 @@
       }
     },
     "./package.json": "./package.json"
-  }
+  },
+  "packageManager": "pnpm@11.21.0"
 }

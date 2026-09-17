@@ -26,7 +26,7 @@ interface HeightParam {
 
 interface RpcAbciQueryParams {
   readonly path: string
-  /** hex encoded */
+  /** base64 encoded */
   readonly data: string
   readonly height?: string
   readonly prove?: boolean

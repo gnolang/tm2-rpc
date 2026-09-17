@@ -16,6 +16,16 @@ import {
 // ============================================================================
 
 /**
+ * An amino-JSON encoded ABCI error, e.g. `{ "@type": "/std.OutOfGasError" }`.
+ *
+ * Any additional fields depend on the concrete error type.
+ */
+export interface AbciError {
+  readonly "@type": string
+  readonly [key: string]: unknown
+}
+
+/**
  * Response from the ABCI info query.
  *
  * Contains information about the application including the latest block
@@ -80,7 +90,7 @@ export interface Block {
   readonly header: Header
   /**
    * Commit information from the previous block.
-   * For the block at height 1 (genesis), last commit is not set.
+   * For the chain's first block (height 1, or the genesis initial height), last commit is not set.
    */
   readonly lastCommit: Commit | null
   /** Raw transaction bytes included in this block */
@@ -200,7 +210,13 @@ export interface BroadcastTxCommitResponse {
  * it has been included in a block. Includes the transaction hash and
  * the result of the mempool check.
  */
-export interface BroadcastTxSyncResponse extends TxData {
+export interface BroadcastTxSyncResponse {
+  /** Error from the mempool check (CheckTx), or null if the transaction was accepted */
+  readonly error: AbciError | null
+  /** Data returned by CheckTx */
+  readonly data: Uint8Array
+  /** Log returned by CheckTx */
+  readonly log: string
   /** Hash of the submitted transaction */
   readonly hash: Uint8Array
 }
@@ -336,12 +352,16 @@ export type Evidence = any;
 /**
  * Event data from transaction or block execution.
  *
- * Contains event type and key-value attributes for application-specific events.
+ * The shape depends on "@type". Realm events ("/tm.Event") carry `type`, `attrs`
+ * and `pkg_path`. Other events such as "/tm.StorageDepositEvent",
+ * "/tm.StorageUnlockEvent" or "/bank.TransferEvent" carry their own fields
+ * (available through the index signature) and may have no `type` or `pkg_path`.
  */
 export interface Event {
   readonly "@type": string
-  readonly type: string
-  readonly pkg_path: string
+  readonly type?: string
+  readonly pkg_path?: string
+  /** Always set; empty for events without attributes */
   readonly attrs: readonly EventAttribute[]
   readonly [key: string]: unknown
 }
@@ -400,6 +420,11 @@ export interface GenesisResponse {
   readonly genesisTime: ReadonlyDate
   /** Unique identifier for this blockchain */
   readonly chainId: string
+  /**
+   * Height of the chain's first block. Undefined (or 0/1) for chains starting
+   * at height 1; greater than 1 for chains restarted through a hardfork.
+   */
+  readonly initialHeight?: number
   /** Initial consensus parameters */
   readonly consensusParams: ConsensusParams
   /** Initial validator set */
@@ -435,7 +460,7 @@ export interface Header {
   readonly appVersion: string
   /**
    * Block ID of the previous block.
-   * This is null for the genesis block (height 1).
+   * This is null for the chain's first block (height 1, or the genesis initial height).
    */
   readonly lastBlockId: BlockId | null
 
@@ -563,13 +588,13 @@ export interface PeerRoundState {
   readonly proposalBlockParts: BitArray | null
   readonly proposalBlockPartsHeader: PartSetHeader | null
   readonly proposalPolRound: number
-  readonly proposalPol: BitArray
-  readonly prevotes: BitArray
-  readonly precommits: BitArray
+  readonly proposalPol: BitArray | null
+  readonly prevotes: BitArray | null
+  readonly precommits: BitArray | null
   readonly lastCommitRound: number
-  readonly lastCommit: BitArray
+  readonly lastCommit: BitArray | null
   readonly catchupCommitRound: number
-  readonly catchupCommit: BitArray
+  readonly catchupCommit: BitArray | null
 }
 
 /**
@@ -667,10 +692,8 @@ export type Response
  * Contains error information, data, events, and logs common to all ABCI responses.
  */
 export interface ResponseBase {
-  readonly error: {
-    readonly "@type": string
-    readonly value: string
-  }
+  /** The error, or null on success */
+  readonly error: AbciError | null
   readonly data: Uint8Array
   readonly events: readonly Event[]
   readonly log: string
@@ -735,6 +758,8 @@ export interface StatusResponse {
   readonly syncInfo: SyncInfo
   /** Validator information (empty if not a validator) */
   readonly validatorInfo: Validator
+  /** Build version of the node binary (undefined for nodes that don't report it) */
+  readonly buildVersion?: string
 }
 
 /**
@@ -1003,11 +1028,11 @@ export function broadcastTxCommitSuccess(response: BroadcastTxCommitResponse): b
  * if (broadcastTxSyncSuccess(result)) {
  *   console.log(`Transaction ${toHex(result.hash)} accepted into mempool`);
  * } else {
- *   console.log('Transaction rejected:', result.responseBase.error);
+ *   console.log('Transaction rejected:', result.error);
  * }
  * ```
  */
 export function broadcastTxSyncSuccess(res: BroadcastTxSyncResponse): boolean {
   // Success means no error in the CheckTx phase (mempool acceptance)
-  return res.responseBase.error === null;
+  return res.error === null;
 }
