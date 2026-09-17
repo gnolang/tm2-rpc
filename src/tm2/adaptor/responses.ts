@@ -40,6 +40,12 @@ import {
 } from "../hasher.js";
 import * as responses from "../responses.js";
 
+/**
+ * Length limit passed to `fromBech32`. Its default of `Infinity` is rejected by
+ * `@scure/base` >= 2.3.0, so pass the largest safe integer to keep "no limit".
+ */
+const BECH32_NO_LIMIT = Number.MAX_SAFE_INTEGER;
+
 // ============================================================================
 // INTERFACES AND TYPES
 // ============================================================================
@@ -1774,7 +1780,7 @@ function decodeUnconfirmedTxs(data: RpcUnconfirmedTxsResponse): responses.Unconf
  */
 export function decodeValidatorGenesis(data: RpcValidatorGenesis): responses.Validator {
   return {
-    address: fromBech32(assertNotEmpty(data.address)).data,
+    address: fromBech32(assertNotEmpty(data.address), BECH32_NO_LIMIT).data,
     pubkey: decodePubkey(assertObject(data.pub_key)),
     votingPower: apiToBigInt(assertNotEmpty(data.power)),
     // Genesis validator names are not validated by the node and may be empty
@@ -1793,7 +1799,7 @@ export function decodeValidatorInfo(data: RpcValidatorInfo): responses.Validator
     pubkey: decodePubkey(assertObject(data.pub_key)),
     votingPower: apiToBigInt(assertNotEmpty(data.voting_power)),
     proposerPriority: data.proposer_priority ? apiToBigInt(assertNotEmpty(data.proposer_priority)) : undefined,
-    address: fromBech32(assertNotEmpty(data.address)).data,
+    address: fromBech32(assertNotEmpty(data.address), BECH32_NO_LIMIT).data,
   };
 }
 
