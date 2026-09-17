@@ -45,6 +45,14 @@ import * as responses from "../responses.js";
 // ============================================================================
 
 /**
+ * Amino-JSON encoded ABCI error
+ */
+interface RpcAbciError {
+  readonly "@type": string
+  readonly [key: string]: unknown
+}
+
+/**
  * Result wrapper for ABCI info responses from JSON-RPC
  */
 interface AbciInfoResult {
@@ -188,17 +196,23 @@ interface RpcBlockchainResponse {
  */
 interface RpcBroadcastTxCommitResponse {
   readonly height: string
-  /** hex encoded */
+  /** base64 encoded */
   readonly hash: string
   readonly check_tx: RpcTxData
   readonly deliver_tx?: RpcTxData
 }
 
 /**
- * Raw RPC response structure for synchronous transaction broadcast
+ * Raw RPC response structure for synchronous and asynchronous transaction broadcast
+ * (ResultBroadcastTx). Unlike the commit variant, the CheckTx fields are not
+ * wrapped in a ResponseBase.
  */
-interface RpcBroadcastTxSyncResponse extends RpcTxData {
-  /** hex encoded */
+interface RpcBroadcastTxResponse {
+  readonly error: RpcAbciError | null
+  /** base64 encoded */
+  readonly data: string | null
+  readonly log: string
+  /** base64 encoded */
   readonly hash: string
 }
 
@@ -295,13 +309,16 @@ interface RpcEndBlock {
 }
 
 /**
- * Event data structure from transaction execution
+ * Event data structure from transaction execution.
+ *
+ * Only "@type" is common to all events; realm events ("/tm.Event") also carry
+ * type, attrs and pkg_path, while e.g. "/bank.TransferEvent" has none of them.
  */
 export interface RpcEvent {
   readonly "@type": string
-  readonly type: string
-  readonly pkg_path: string
-  readonly attrs: readonly RpcEventAttribute[]
+  readonly type?: string
+  readonly pkg_path?: string
+  readonly attrs?: readonly RpcEventAttribute[] | null
   readonly [key: string]: unknown
 }
 
@@ -327,6 +344,8 @@ type RpcEvidence = any;
 interface RpcGenesisResponse {
   readonly genesis_time: string
   readonly chain_id: string
+  /** Omitted for chains starting at height 1 */
+  readonly initial_height?: string
   readonly consensus_params: RpcConsensusParams
   // The validators key is used to specify a set of validators for testnets or PoA blockchains.
   // PoS blockchains use the app_state.genutil.gentxs field to stake and bond a number of validators in the first block.
@@ -458,11 +477,15 @@ export interface RpcPeerInfo {
 }
 
 /**
- * Peer's consensus round state information
+ * Peer's consensus round state information.
+ *
+ * Peers without a consensus state yet are reported as empty entries
+ * (empty node_address, null peer_state).
  */
 export interface RpcPeerRoundState {
   node_address: string
-  peer_state: string
+  /** base64 encoded amino JSON */
+  peer_state: string | null
 }
 /**
  * Detailed peer consensus state information
@@ -476,13 +499,13 @@ export interface RpcPeerState {
   proposal_block_parts_header: RpcPartSetHeader
   proposal_block_parts: RpcBitArray | null
   proposal_pol_round: string
-  proposal_pol: RpcBitArray
-  prevotes: RpcBitArray
-  precommits: RpcBitArray
+  proposal_pol: RpcBitArray | null
+  prevotes: RpcBitArray | null
+  precommits: RpcBitArray | null
   last_commit_round: string
-  last_commit: RpcBitArray
+  last_commit: RpcBitArray | null
   catchup_commit_round: string
-  catchup_commit: RpcBitArray
+  catchup_commit: RpcBitArray | null
 }
 /**
  * Private validator configuration settings
@@ -562,11 +585,7 @@ export interface RpcRemoteSignerConfig {
  * Base response structure for ABCI operations
  */
 interface RpcResponseBase {
-  readonly Error: {
-    readonly "@type": string
-    /** base64 encoded */
-    readonly value: string
-  }
+  readonly Error: RpcAbciError | null
   readonly Data: string | null
   readonly Events: RpcEvent[]
   readonly Log: string
@@ -618,6 +637,8 @@ interface RpcStatusResponse {
   readonly node_info: RpcNodeInfo
   readonly sync_info: RpcSyncInfo
   readonly validator_info: RpcValidatorInfo
+  /** Not reported by older nodes */
+  readonly build_version?: string
 }
 
 /**
@@ -1016,9 +1037,11 @@ function decodeBroadcastTxCommit(data: RpcBroadcastTxCommitResponse): responses.
  * @param data - The raw RPC broadcast transaction sync response
  * @returns Decoded transaction sync response with hash and validation results
  */
-function decodeBroadcastTxSync(data: RpcBroadcastTxSyncResponse): responses.BroadcastTxSyncResponse {
+function decodeBroadcastTxSync(data: RpcBroadcastTxResponse): responses.BroadcastTxSyncResponse {
   return {
-    ...decodeTxData(data),
+    error: data.error ?? null,
+    data: data.data ? fromBase64(data.data) : new Uint8Array(),
+    log: data.log ?? "",
     hash: fromBase64(assertNotEmpty(data.hash)),
   };
 }
@@ -1152,7 +1175,10 @@ function decodeDumpConsensusStateResponse(data: RpcDumpConsensusStateResponse): 
   return {
     config: decodeConsensusConfig(assertObject(data.config)),
     roundState: decodeRoundState(assertObject(data.round_state)),
-    peers: data.peers && assertArray(data.peers) ? data.peers.map(decodePeerRoundState) : [],
+    // Skip the empty entries reported for peers without a consensus state yet
+    peers: data.peers && assertArray(data.peers)
+      ? data.peers.filter(peer => peer.node_address && peer.peer_state).map(decodePeerRoundState)
+      : [],
   };
 }
 
@@ -1181,13 +1207,19 @@ export function decodeEvent(event: RpcEvent): responses.Event {
   const {
     "@type": atType, type, pkg_path, attrs, ...extra
   } = event;
-  return {
+  const decoded: Record<string, unknown> = {
     ...extra,
     "@type": assertNotEmpty(atType),
-    type,
     attrs: attrs ? decodeAttributes(attrs) : [],
-    pkg_path: assertNotEmpty(pkg_path),
   };
+  // type and pkg_path are only present on some event types (e.g. not on "/bank.TransferEvent")
+  if (type !== undefined && type !== null) {
+    decoded.type = assertString(type);
+  }
+  if (pkg_path !== undefined && pkg_path !== null) {
+    decoded.pkg_path = assertString(pkg_path);
+  }
+  return decoded as responses.Event;
 }
 
 /**
@@ -1223,6 +1255,7 @@ function decodeGenesis(data: RpcGenesisResponse): responses.GenesisResponse {
   return {
     genesisTime: fromRfc3339WithNanoseconds(assertNotEmpty(data.genesis_time)),
     chainId: assertNotEmpty(data.chain_id),
+    initialHeight: may(apiToSmallInt, data.initial_height),
     consensusParams: decodeConsensusParams(data.consensus_params),
     validators: data.validators ? assertArray(data.validators).map(decodeValidatorGenesis) : [],
     appHash: data.app_hash ? fromBase64(assertSet(data.app_hash)) : new Uint8Array(), // empty string in kvstore app
@@ -1387,7 +1420,7 @@ function decodePeerRoundState(data: RpcPeerRoundState): responses.DumpPeerRoundS
     address: parts[0],
     server: ip[0],
     port: apiToSmallInt(ip[1]),
-    roundState: decodePeerState(JSON.parse(fromAscii(fromBase64(assertNotEmpty(data.peer_state)))).round_state),
+    roundState: decodePeerState(JSON.parse(fromAscii(fromBase64(assertNotEmpty(data.peer_state!)))).round_state),
   };
 }
 /**
@@ -1406,13 +1439,14 @@ function decodePeerState(data: RpcPeerState): responses.PeerRoundState {
     proposalBlockPartsHeader: decodePartSetHeader(assertObject(data.proposal_block_parts_header)),
     proposalBlockParts: data.proposal_block_parts ? decodeBitArray(assertObject(data.proposal_block_parts)) : null,
     proposalPolRound: apiToSmallInt(data.proposal_pol_round),
-    proposalPol: decodeBitArray(assertObject(data.proposal_pol)),
-    prevotes: decodeBitArray(assertObject(data.prevotes)),
-    precommits: decodeBitArray(assertObject(data.precommits)),
+    // The vote bit arrays are nil until the corresponding messages have been received from the peer
+    proposalPol: data.proposal_pol ? decodeBitArray(assertObject(data.proposal_pol)) : null,
+    prevotes: data.prevotes ? decodeBitArray(assertObject(data.prevotes)) : null,
+    precommits: data.precommits ? decodeBitArray(assertObject(data.precommits)) : null,
     lastCommitRound: apiToSmallInt(data.last_commit_round),
-    lastCommit: decodeBitArray(assertObject(data.last_commit)),
+    lastCommit: data.last_commit ? decodeBitArray(assertObject(data.last_commit)) : null,
     catchupCommitRound: apiToSmallInt(data.catchup_commit_round),
-    catchupCommit: decodeBitArray(assertObject(data.catchup_commit)),
+    catchupCommit: data.catchup_commit ? decodeBitArray(assertObject(data.catchup_commit)) : null,
   };
 }
 /**
@@ -1595,6 +1629,7 @@ function decodeStatus(data: RpcStatusResponse): responses.StatusResponse {
     nodeInfo: decodeNodeInfo(data.node_info),
     syncInfo: decodeSyncInfo(data.sync_info),
     validatorInfo: decodeValidatorInfo(data.validator_info),
+    buildVersion: may(assertString, data.build_version),
   };
 }
 
@@ -1742,7 +1777,8 @@ export function decodeValidatorGenesis(data: RpcValidatorGenesis): responses.Val
     address: fromBech32(assertNotEmpty(data.address)).data,
     pubkey: decodePubkey(assertObject(data.pub_key)),
     votingPower: apiToBigInt(assertNotEmpty(data.power)),
-    name: assertNotEmpty(data.name),
+    // Genesis validator names are not validated by the node and may be empty
+    name: may(assertString, data.name),
   };
 }
 
@@ -1901,17 +1937,21 @@ export class Responses {
    * @returns Decoded sync broadcast result with transaction hash and validation
    */
   public static decodeBroadcastTxSync(response: JsonRpcSuccessResponse): responses.BroadcastTxSyncResponse {
-    return decodeBroadcastTxSync(response.result as RpcBroadcastTxSyncResponse);
+    return decodeBroadcastTxSync(response.result as RpcBroadcastTxResponse);
   }
 
   /**
    * Decodes an asynchronous broadcast transaction response.
    *
+   * The node does not wait for CheckTx in async mode, so only the hash is meaningful.
+   *
    * @param response - Raw JSON-RPC success response from broadcast_tx_async method
-   * @returns Decoded async broadcast result (same format as sync)
+   * @returns Decoded async broadcast result with the transaction hash
    */
   public static decodeBroadcastTxAsync(response: JsonRpcSuccessResponse): responses.BroadcastTxAsyncResponse {
-    return Responses.decodeBroadcastTxSync(response);
+    return {
+      hash: fromBase64(assertNotEmpty((response.result as RpcBroadcastTxResponse).hash)),
+    };
   }
 
   /**

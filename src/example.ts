@@ -10,12 +10,12 @@ import {
 /**
  * Initializes a connection to a Tendermint2 RPC endpoint and demonstrates various API calls.
  *
- * This function connects to the test network and executes a series of RPC method calls
+ * This function connects to gno.land mainnet (gnoland-1) and executes a series of RPC method calls
  * to showcase the functionality of the Tm2 client, including querying blockchain info,
  * blocks, validators, transactions, and network status.
  */
 const init = async () => {
-  const client = await connectTm2("wss://rpc.betanet.testnets.gno.land");
+  const client = await connectTm2("wss://rpc.gno.land");
 
   console.log(util.inspect(await client.abciInfo(), {
     depth: null,
@@ -81,9 +81,10 @@ const init = async () => {
     depth: null,
   }));
 
-  const client2 = await connectTm2("https://rpc.betanet.testnets.gno.land");
+  const client2 = await connectTm2("https://rpc.gno.land");
+  // First mainnet transaction (height 786), a bank transfer emitting a /bank.TransferEvent
   console.log(util.inspect(await client2.tx({
-    hash: fromBase64("yae+vMzUj2K7bAvoGaAM/MqlYeFUER/cZODy0QSoPo8="),
+    hash: fromBase64("4zid9yLASy96lsWEdvZFIG+0iM3XU1Bd2n/Iv3AelA4="),
   }), {
     depth: null,
   }));
