@@ -1,5 +1,11 @@
 # @gnolang/tm2-rpc
 
+## 2.0.2
+
+### Patch Changes
+
+- [#15](https://github.com/gnolang/tm2-rpc/pull/15) [`e6f99d3`](https://github.com/gnolang/tm2-rpc/commit/e6f99d3294c2ade1fd89aef6b1e8ebe8af0287a5) Thanks [@clockworkgr](https://github.com/clockworkgr)! - Update the `@cosmjs/*` runtime dependencies to 0.39.0.
+
 ## 2.0.1
 
 ### Patch Changes
