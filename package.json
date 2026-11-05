@@ -46,7 +46,7 @@
   },
   "devDependencies": {
     "@arethetypeswrong/core": "^0.18.2",
-    "@bufbuild/protobuf": "^2.11.0",
+    "@bufbuild/protobuf": "^2.16.0",
     "@changesets/changelog-github": "^1.0.1",
     "@changesets/cli": "^3.0.3",
     "@eslint/js": "^10.0.1",
@@ -55,13 +55,13 @@
     "@vitest/coverage-istanbul": "^5.0.1",
     "eslint": "^10.1.0",
     "eslint-plugin-simple-import-sort": "^14.0.0",
-    "glob": "^13",
+    "glob": "^14",
     "ses": "^2.3.0",
     "tsdown": "^0.23.0",
     "typescript": "^6.0.2",
-    "typescript-eslint": "^8.58.0",
+    "typescript-eslint": "^8.72.1",
     "vitest": "^5.0.1",
-    "wait-on": "^9.0.4"
+    "wait-on": "^9.5.1"
   },
   "main": "dist/index.cjs",
   "module": "dist/index.mjs",
